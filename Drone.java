@@ -23,7 +23,7 @@ public class Drone implements Steppable{
 	
 	protected double wayPointX;
 	protected double wayPointY;
-	protected double velocity = 0.1;
+	protected double velocity = 0.3;
 	
 	public String toString() {
 		return "Drone: "+droneNumber;

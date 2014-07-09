@@ -52,7 +52,7 @@ public class Demo extends SimState{
 						((Drone)(getDrones.objs[i])).nearbyDrones.add(j);
 						
 						epidemic(((Drone)(getDrones.objs[i])),((Drone)(getDrones.objs[j])));
-						//sprayAndWait(((Drone)(getDrones.objs[i])),((Drone)(getDrones.objs[j])));
+						//sprayAndWait(((Drone)(getDrones.objs[i])),((Drone)(getDrones.objs[j])), i, j);
 						
 						acknowledgement(((Drone)(getDrones.objs[i])),((Drone)(getDrones.objs[j])));
 					}
@@ -115,11 +115,11 @@ public class Demo extends SimState{
 		}
 	}
 	
-	public void sprayAndWait(Drone A, Drone B){
+	public void sprayAndWait(Drone A, Drone B, int sourceA, int sourceB){
 		for(int i=0; i<B.dataObject.size(); i++){
 			if(!A.ACK.contains(B.dataObject.get(i))){
 				if(!A.dataObject.contains(B.dataObject.get(i))){
-					if(B.dataObject.get(i).getSource()==i){
+					if(B.dataObject.get(i).getSource()==sourceB){
 						A.dataObject.add(B.dataObject.get(i));
 					}
 				}
@@ -129,7 +129,7 @@ public class Demo extends SimState{
 		for(int j=0; j<A.dataObject.size(); j++){
 			if(!B.ACK.contains(A.dataObject.get(j))){
 				if(!B.dataObject.contains(A.dataObject.get(j))){
-					if(A.dataObject.get(j).getSource()==j){
+					if(A.dataObject.get(j).getSource()==sourceA){
 						B.dataObject.add(A.dataObject.get(j));
 					}
 				}
