@@ -54,7 +54,7 @@ public class Demo extends SimState{
 						epidemic(((Drone)(getDrones.objs[i])),((Drone)(getDrones.objs[j])));
 						//sprayAndWait(((Drone)(getDrones.objs[i])),((Drone)(getDrones.objs[j])), i, j);
 						
-						acknowledgement(((Drone)(getDrones.objs[i])),((Drone)(getDrones.objs[j])));
+						dronesACKCommunication(((Drone)(getDrones.objs[i])),((Drone)(getDrones.objs[j])));
 					}
 				}
 				else{
@@ -87,7 +87,7 @@ public class Demo extends SimState{
 					
 					((Captain)(getCaptains.objs[i])).nearbyDrones.add(j);
 					
-					dataDestination(((Captain)(getCaptains.objs[i])), ((Drone)(getDrones.objs[j])));
+					captainsCommunication(((Captain)(getCaptains.objs[i])), ((Drone)(getDrones.objs[j])));
 				}
 				else{
 					captainConnectedDrones[i][j] = "Not Connected";
@@ -99,60 +99,67 @@ public class Demo extends SimState{
 	
 	public void epidemic(Drone A, Drone B){
 			for(int i=0; i<B.dataObject.size(); i++){
-				if(!A.ACK.contains(B.dataObject.get(i))){	
-					if(!A.dataObject.contains(B.dataObject.get(i))){
+				if(!A.ACK.contains(B.dataObject.get(i).getHashCode())){	
+					if(!A.hashCode.contains(B.dataObject.get(i).getHashCode())){
+						
+						A.hashCode.add(B.dataObject.get(i).getHashCode());
 						A.dataObject.add(B.dataObject.get(i));
 					}
 				}
 			}
 
 		for(int j=0; j<A.dataObject.size(); j++){
-			if(!B.ACK.contains(A.dataObject.get(j))){
-				if(!B.dataObject.contains(A.dataObject.get(j))){
+			if(!B.ACK.contains(A.dataObject.get(j).getHashCode())){
+				if(!B.hashCode.contains(A.dataObject.get(j).getHashCode())){
+					
+					B.hashCode.add(A.dataObject.get(j).getHashCode());
 					B.dataObject.add(A.dataObject.get(j));
 				}
 			}	
 		}
 	}
 	
-	public void sprayAndWait(Drone A, Drone B, int sourceA, int sourceB){
-		for(int i=0; i<B.dataObject.size(); i++){
-			if(!A.ACK.contains(B.dataObject.get(i))){
-				if(!A.dataObject.contains(B.dataObject.get(i))){
-					if(B.dataObject.get(i).getSource()==sourceB){
-						A.dataObject.add(B.dataObject.get(i));
-					}
-				}
-			}
-		}
-		
-		for(int j=0; j<A.dataObject.size(); j++){
-			if(!B.ACK.contains(A.dataObject.get(j))){
-				if(!B.dataObject.contains(A.dataObject.get(j))){
-					if(A.dataObject.get(j).getSource()==sourceA){
-						B.dataObject.add(A.dataObject.get(j));
-					}
-				}
-			}	
-		}
-	}
+//	public void sprayAndWait(Drone A, Drone B, int sourceA, int sourceB){
+//		for(int i=0; i<B.dataObject.size(); i++){
+//			if(!A.ACK.contains(B.dataObject.get(i))){
+//				if(!A.dataObject.contains(B.dataObject.get(i))){
+//					if(B.dataObject.get(i).getSource()==sourceB){
+//						
+//						A.dataObject.add(B.dataObject.get(i));
+//					}
+//				}
+//			}
+//		}
+//		
+//		for(int j=0; j<A.dataObject.size(); j++){
+//			if(!B.ACK.contains(A.dataObject.get(j))){
+//				if(!B.dataObject.contains(A.dataObject.get(j))){
+//					if(A.dataObject.get(j).getSource()==sourceA){
+//						
+//						B.dataObject.add(A.dataObject.get(j));
+//					}
+//				}
+//			}	
+//		}
+//	}
 
-	public void dataDestination(Captain captain, Drone drone){
+	public void captainsCommunication(Captain captain, Drone drone){
 		for(int i=0; i<drone.dataObject.size(); i++){
-			if(!captain.dataObject.contains(drone.dataObject.get(i))){
-				// If the data has been sent to the captain, the data will be added to the ACK list.
+			if(!captain.hashCode.contains(drone.dataObject.get(i).getHashCode())){
+
+				captain.hashCode.add(drone.dataObject.get(i).getHashCode());
 				captain.dataObject.add(drone.dataObject.get(i));		
-				// The Captain pass the ACK to the encountered drone.
-				//drone.ACK.add(drone.dataObject.get(i));
+				
 			}
 			else{
+				drone.hashCode.remove(drone.dataObject.get(i).getHashCode());
 				drone.dataObject.remove(drone.dataObject.get(i));
 			}
 		}
 		
-		for(int j=0; j<captain.dataObject.size(); j++){
-			if(!drone.ACK.contains(captain.dataObject.get(j))){
-				drone.ACK.add(captain.dataObject.get(j));
+		for(int j=0; j<captain.hashCode.size(); j++){
+			if(!drone.ACK.contains(captain.hashCode.get(j))){
+				drone.ACK.add(captain.hashCode.get(j));
 			}
 		}
 		
@@ -165,25 +172,26 @@ public class Demo extends SimState{
 				return Long.compare(data1.getTime(), data2.getTime());
 			}
 		});
+		
+		Collections.sort(captain.hashCode, new Comparator<HashCode>(){
+			@Override
+			public int compare(HashCode hashCode1, HashCode hashCode2){
+				return Long.compare(hashCode1.getHashCodeGeneratedTime(), hashCode2.getHashCodeGeneratedTime());
+			}
+		});
 	}
 	
-	public void acknowledgement(Drone A, Drone B){
+	public void dronesACKCommunication(Drone A, Drone B){
 		if(!A.ACK.isEmpty() && B.ACK.isEmpty()){
 			for(int i=0; i<A.ACK.size(); i++){
 				B.ACK.add(A.ACK.get(i));
 			}
-			
-			//Collections.copy(B.ACK, A.ACK);
-			
 			B.ACKTimestamp = System.nanoTime();
 		}
 		else if(A.ACK.isEmpty() && !B.ACK.isEmpty()){
 			for(int j=0; j<B.ACK.size(); j++){
 				A.ACK.add(B.ACK.get(j));
 			}
-			
-			//Collections.copy(A.ACK, B.ACK);
-			
 			A.ACKTimestamp = System.nanoTime();
 		}
 		else if(!A.ACK.isEmpty() && !B.ACK.isEmpty()){
@@ -222,6 +230,9 @@ public class Demo extends SimState{
 				data.setSource(drone.droneNumber);
 				data.setData((int)i*10);
 				data.setTime(System.nanoTime());
+				data.setHashCodeGeneratedTime(data.getTime());
+				data.setHashCode(data.hashCode());
+				drone.hashCode.add(data.getHashCode());
 				drone.dataObject.add(data);
 			}
 			
@@ -230,7 +241,7 @@ public class Demo extends SimState{
 			initialDroneX = initialDroneX + drones.getWidth() * 0.15;
 			initialDroneY = initialDroneY + drones.getHeight() * 0.2;
 			
-			schedule.scheduleRepeating(drone,10.0);
+			schedule.scheduleRepeating(drone);
 		}
 		
 		for(int j=0; j<numCaptains; j++){
@@ -240,7 +251,7 @@ public class Demo extends SimState{
 			initialCaptainX = initialCaptainX + captains.getWidth() * 0.4;
 			initialCaptainY = initialCaptainY + captains.getHeight() *0.2;
 			
-		    schedule.scheduleRepeating(captain,10.0);
+		    schedule.scheduleRepeating(captain);
 		}
 	}
 	

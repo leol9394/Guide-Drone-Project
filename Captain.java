@@ -15,6 +15,7 @@ public class Captain implements Steppable{
 	protected double scale;
 	protected ArrayList<DataObject> dataObject = new ArrayList<DataObject>();
 	protected ArrayList<Integer> nearbyDrones;
+	protected ArrayList<HashCode> hashCode = new ArrayList<HashCode>();
 	
 	public String toString() {
 		return "Captain";
@@ -40,13 +41,13 @@ public class Captain implements Steppable{
 		return dataContent;
 	}
 	
-//	public ArrayList<Long> getDataTime(){
-//		ArrayList<Long> dataTime = new ArrayList<Long>();
-//		for(int i=0; i<dataObject.size(); i++){
-//			dataTime.add(dataObject.get(i).getTime());
-//		}
-//		return dataTime;
-//	}
+	public ArrayList<Integer> getHashCode(){
+		ArrayList<Integer> hash = new ArrayList<Integer>();
+		for(int i=0; i<hashCode.size(); i++){
+			hash.add(hashCode.get(i).getHashCode());
+		}
+		return hash;
+	}
 	
 	public int getScale(){
 		return (int)scale;

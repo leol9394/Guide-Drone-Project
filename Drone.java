@@ -16,21 +16,19 @@ public class Drone implements Steppable{
 	protected Double2D me;
 	protected ArrayList<DataObject> dataObject = new ArrayList<DataObject>();
 	protected ArrayList<Integer> nearbyDrones;
-	protected ArrayList<DataObject> ACK = new ArrayList<DataObject>();
+	
+	protected ArrayList<HashCode> hashCode = new ArrayList<HashCode>();
+	protected ArrayList<HashCode> ACK = new ArrayList<HashCode>();
+	
 	protected long ACKTimestamp;
-	// The duration that ACK exist, in seconds.
-	protected long ACKDuration = 30;
+	protected long ACKDuration = 30; 	// The duration that ACK exist, in seconds.
 	
 	protected double wayPointX;
 	protected double wayPointY;
-	protected double velocity = 0.3;
+	protected double velocity = 0.1;
 	
 	public String toString() {
 		return "Drone: "+droneNumber;
-	}
-	
-	public long getACKTimestamp(){
-		return ACKTimestamp;
 	}
 	
 	public long getACKDuration(){
@@ -41,14 +39,6 @@ public class Drone implements Steppable{
 			return (System.nanoTime() - ACKTimestamp);
 		}
 	}
-	
-//	public double getWayPointX(){
-//		return wayPointX;
-//	}
-//	
-//	public double getWayPointY(){
-//		return wayPointY;
-//	}
 	
 	public ArrayList<Integer> getNearbyDrones(){
 		return nearbyDrones;
@@ -70,20 +60,12 @@ public class Drone implements Steppable{
 		return dataContent;
 	}
 	
-//	public ArrayList<Long> getDataTime(){
-//		ArrayList<Long> dataTime = new ArrayList<Long>();
-//		for(int i=0; i<dataObject.size(); i++){
-//			dataTime.add(dataObject.get(i).getTime());
-//		}
-//		return dataTime;
-//	}
-	
 	public ArrayList<Integer> getACK(){
-		ArrayList<Integer> dataContent = new ArrayList<Integer>();
+		ArrayList<Integer> dataACK = new ArrayList<Integer>();
 		for(int i=0; i<ACK.size(); i++){
-			dataContent.add(ACK.get(i).getData());
+			dataACK.add(ACK.get(i).getHashCode());
 		}
-		return dataContent;
+		return dataACK;
 	}
 	
 	public int getDroneNumber(){
@@ -102,6 +84,14 @@ public class Drone implements Steppable{
 		return me.y;
 	}
 	
+//	public double getWayPointX(){
+//	return wayPointX;
+//}
+//
+//public double getWayPointY(){
+//	return wayPointY;
+//}
+	
 	public void step(SimState state){
 		scale = 5.0;
 
@@ -112,7 +102,6 @@ public class Drone implements Steppable{
 	
 	public void move(SimState state){
 		Demo demo = (Demo) state;
-//		double now = demo.schedule.getTime();
 		Continuous2D drones = demo.drones;
 		
 		me = drones.getObjectLocation(this);
@@ -139,12 +128,7 @@ public class Drone implements Steppable{
 		else{
 			wayPointX =drones.getWidth() * demo.random.nextDouble();
 			wayPointY =drones.getHeight() * demo.random.nextDouble();
-		}	
-//		velocityX = scaleX * (waypointX - currentX);
-//		velocityY = scaleY * (waypointY - currentY);
-//		
-//		x += DT * Math.sgn(velocityX) * Math.min(abs(velocityX), maxVelocityX);
-//		y += DT * velocityY;	    
+		}		    
 	}
 	
 	public void vaccination(){
@@ -155,8 +139,14 @@ public class Drone implements Steppable{
 			if((currentTime - ACKTimestamp) < (ACKDuration * Math.pow(10.0, 9))){
 				if(!dataObject.isEmpty()){
 					for(int i=0; i<ACK.size(); i++){
-						if(dataObject.contains(ACK.get(i))){
-							dataObject.remove(ACK.get(i));
+						if(hashCode.contains(ACK.get(i))){
+							hashCode.remove(ACK.get(i));
+							
+							for(int j=0; j<dataObject.size(); j++){
+								if(dataObject.get(j).getHashCode().equals(ACK.get(i))){
+									dataObject.remove(j);
+								}	
+							}
 						}
 					}
 				}

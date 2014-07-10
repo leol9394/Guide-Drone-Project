@@ -3,8 +3,9 @@ package sim.app.drones;
 public class DataObject {
 	private int source;
 	private int data;
-	private long time;
-	//private boolean ACK;
+	private long generatedTime;
+	private HashCode hashCode = new HashCode();
+	//private Object object;
 	
 	public void setSource(int source){
 		this.source = source;
@@ -23,19 +24,31 @@ public class DataObject {
 	}
 	
 	public void setTime(long time){
-		this.time = time;
+		this.generatedTime = time;
 	}
 	
 	public long getTime(){
-		return time;
+		return generatedTime;
 	}
 	
-//	public void setACK(boolean state){
-//		this.ACK = state;
+	public void setHashCode(int hashCode){
+		this.hashCode.setHashCode(hashCode);
+	}
+	
+	public void setHashCodeGeneratedTime(long time){
+		this.hashCode.setHashCodeGeneratedTime(time);
+	}
+	
+	public HashCode getHashCode(){
+		return hashCode;
+	}
+	
+//	public void setObject(Object object){
+//		this.object = object;
 //	}
 //	
-//	public boolean getACK(){
-//		return ACK;
+//	public Object getObject(){
+//		return object;
 //	}
-
+	
 }
