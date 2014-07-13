@@ -14,21 +14,37 @@ public class Drone implements Steppable{
 	protected int droneNumber;
 	protected double scale;
 	protected Double2D me;
+	
 	protected ArrayList<DataObject> dataObject = new ArrayList<DataObject>();
 	protected ArrayList<Integer> nearbyDrones;
-	
 	protected ArrayList<HashCode> hashCode = new ArrayList<HashCode>();
 	protected ArrayList<HashCode> ACK = new ArrayList<HashCode>();
 	
 	protected long ACKTimestamp;
 	protected long ACKDuration = 30; 	// The duration that ACK exist, in seconds.
 	
+	protected int copies = 1;
+	
 	protected double wayPointX;
 	protected double wayPointY;
-	protected double velocity = 0.1;
+	protected double velocity = 0.05;
 	
 	public String toString() {
-		return "Drone: "+droneNumber;
+		if(!dataObject.isEmpty()){
+			String result = "Drone: "+droneNumber+" Data: ";
+			for(int i=0; i<dataObject.size(); i++){
+				result += " " + dataObject.get(i).getData();
+			}
+			return result;
+		}
+		else{
+			String result = "Drone: "+droneNumber;
+			return result;
+		}
+	}
+	
+	public ArrayList<Integer> getNearbyDrones(){
+		return nearbyDrones;
 	}
 	
 	public long getACKDuration(){
@@ -39,58 +55,46 @@ public class Drone implements Steppable{
 			return (System.nanoTime() - ACKTimestamp);
 		}
 	}
+
+//	public ArrayList<Integer> getDataSource(){
+//		ArrayList<Integer> dataSource = new ArrayList<Integer>();
+//		for(int i=0; i<dataObject.size(); i++){
+//			dataSource.add(dataObject.get(i).getSource());
+//		}
+//		return dataSource;
+//	}
 	
-	public ArrayList<Integer> getNearbyDrones(){
-		return nearbyDrones;
-	}
+//	public ArrayList<Integer> getDataContent(){
+//		ArrayList<Integer> dataContent = new ArrayList<Integer>();
+//		for(int i=0; i<dataObject.size(); i++){
+//			dataContent.add(dataObject.get(i).getData());
+//		}
+//		return dataContent;
+//	}
 	
-	public ArrayList<Integer> getDataSource(){
-		ArrayList<Integer> dataSource = new ArrayList<Integer>();
-		for(int i=0; i<dataObject.size(); i++){
-			dataSource.add(dataObject.get(i).getSource());
-		}
-		return dataSource;
-	}
+//	public ArrayList<Integer> getACK(){
+//		ArrayList<Integer> dataACK = new ArrayList<Integer>();
+//		for(int i=0; i<ACK.size(); i++){
+//			dataACK.add(ACK.get(i).getHashCode());
+//		}
+//		return dataACK;
+//	}
 	
-	public ArrayList<Integer> getDataContent(){
-		ArrayList<Integer> dataContent = new ArrayList<Integer>();
-		for(int i=0; i<dataObject.size(); i++){
-			dataContent.add(dataObject.get(i).getData());
-		}
-		return dataContent;
-	}
-	
-	public ArrayList<Integer> getACK(){
-		ArrayList<Integer> dataACK = new ArrayList<Integer>();
-		for(int i=0; i<ACK.size(); i++){
-			dataACK.add(ACK.get(i).getHashCode());
-		}
-		return dataACK;
-	}
-	
-	public int getDroneNumber(){
-		return droneNumber;
-	}
-	
-	public double getScale(){
-		return scale;
-	}
-	
-	public double X(){
-		return me.x;
-	}
-	
-	public double Y(){
-		return me.y;
-	}
+//	public double getScale(){
+//		return scale;
+//	}
 	
 //	public double getWayPointX(){
-//	return wayPointX;
-//}
+//		return wayPointX;
+//  }
 //
-//public double getWayPointY(){
-//	return wayPointY;
-//}
+//  public double getWayPointY(){
+//		return wayPointY;
+//  }
+	
+//	public int getDroneNumber(){
+//		return droneNumber;
+//	}
 	
 	public void step(SimState state){
 		scale = 5.0;

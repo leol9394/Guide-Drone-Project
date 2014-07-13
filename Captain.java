@@ -18,7 +18,17 @@ public class Captain implements Steppable{
 	protected ArrayList<HashCode> hashCode = new ArrayList<HashCode>();
 	
 	public String toString() {
-		return "Captain";
+		if(!dataObject.isEmpty()){
+			String result = "Captain Data: ";
+			for(int i=0; i<dataObject.size(); i++){
+				result += " " + dataObject.get(i).getData();
+			}
+			return result;
+		}
+		else{
+			String result = "Captain";
+			return result;
+		}
 	}
 	
 	public ArrayList<Integer> getNearbyDrones(){
@@ -49,16 +59,12 @@ public class Captain implements Steppable{
 		return hash;
 	}
 	
-	public int getScale(){
-		return (int)scale;
-	}
-	
-	public double X(){
-		return me.x;
-	}
-	
-	public double Y(){
-		return me.y;
+	public ArrayList<Long> getTime(){
+		ArrayList<Long> time = new ArrayList<Long>();
+		for(int i=0; i<dataObject.size(); i++){
+			time.add(dataObject.get(i).getTime());
+		}
+		return time;
 	}
 	
 	public void step(SimState state){	

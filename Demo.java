@@ -20,7 +20,7 @@ public class Demo extends SimState{
 	
 	protected double initialDroneX = 20.0;
 	protected double initialDroneY = 10.0;
-	protected double initialCaptainX = 10.0;
+	protected double initialCaptainX = 20.0;
 	protected double initialCaptainY = 50.0;
 	
 	protected String[][] encounteringDrones;
@@ -38,10 +38,10 @@ public class Demo extends SimState{
 			((Drone)(getDrones.objs[i])).nearbyDrones = new ArrayList<Integer>();
 			
 			for(int j=0; j<getDrones.numObjs; j++){
-				double x = ((Drone)(getDrones.objs[i])).X() - ((Drone)(getDrones.objs[j])).X();
-				double y = ((Drone)(getDrones.objs[i])).Y() - ((Drone)(getDrones.objs[j])).Y();
+				double x = ((Drone)(getDrones.objs[i])).me.x - ((Drone)(getDrones.objs[j])).me.x;
+				double y = ((Drone)(getDrones.objs[i])).me.y - ((Drone)(getDrones.objs[j])).me.y;
 				double distance = Math.sqrt(Math.pow(x, 2)+Math.pow(y, 2));
-				double range = (((Drone)(getDrones.objs[i])).getScale() + ((Drone)(getDrones.objs[j])).getScale());
+				double range = (((Drone)(getDrones.objs[i])).scale + ((Drone)(getDrones.objs[j])).scale);
 				
 				if(distance<=range){
 					encounteringDrones[i][j]="Connected";
@@ -51,8 +51,8 @@ public class Demo extends SimState{
 						
 						((Drone)(getDrones.objs[i])).nearbyDrones.add(j);
 						
-						epidemic(((Drone)(getDrones.objs[i])),((Drone)(getDrones.objs[j])));
-						//sprayAndWait(((Drone)(getDrones.objs[i])),((Drone)(getDrones.objs[j])), i, j);
+						//epidemic(((Drone)(getDrones.objs[i])),((Drone)(getDrones.objs[j])));
+						sprayAndWait(((Drone)(getDrones.objs[i])),((Drone)(getDrones.objs[j])), i, j);
 						
 						dronesACKCommunication(((Drone)(getDrones.objs[i])),((Drone)(getDrones.objs[j])));
 					}
@@ -77,10 +77,10 @@ public class Demo extends SimState{
 			((Captain)(getCaptains.objs[i])).nearbyDrones = new ArrayList<Integer>();
 			
 			for(int j=0; j<getDrones.numObjs; j++){
-				double x = ((Captain)(getCaptains.objs[i])).X() - ((Drone)(getDrones.objs[j])).X();
-				double y = ((Captain)(getCaptains.objs[i])).Y() - ((Drone)(getDrones.objs[j])).Y();
+				double x = ((Captain)(getCaptains.objs[i])).me.x - ((Drone)(getDrones.objs[j])).me.x;
+				double y = ((Captain)(getCaptains.objs[i])).me.y - ((Drone)(getDrones.objs[j])).me.y;
 				double distance = Math.sqrt(Math.pow(x, 2)+Math.pow(y, 2));
-				double range = ((Captain)(getCaptains.objs[i])).getScale() + ((Drone)(getDrones.objs[j])).getScale();
+				double range = ((Captain)(getCaptains.objs[i])).scale + ((Drone)(getDrones.objs[j])).scale;
 				
 				if(distance <= range){
 					captainConnectedDrones[i][j] = "Connected";
@@ -119,29 +119,35 @@ public class Demo extends SimState{
 		}
 	}
 	
-//	public void sprayAndWait(Drone A, Drone B, int sourceA, int sourceB){
-//		for(int i=0; i<B.dataObject.size(); i++){
-//			if(!A.ACK.contains(B.dataObject.get(i))){
-//				if(!A.dataObject.contains(B.dataObject.get(i))){
-//					if(B.dataObject.get(i).getSource()==sourceB){
-//						
-//						A.dataObject.add(B.dataObject.get(i));
-//					}
-//				}
-//			}
-//		}
-//		
-//		for(int j=0; j<A.dataObject.size(); j++){
-//			if(!B.ACK.contains(A.dataObject.get(j))){
-//				if(!B.dataObject.contains(A.dataObject.get(j))){
-//					if(A.dataObject.get(j).getSource()==sourceA){
-//						
-//						B.dataObject.add(A.dataObject.get(j));
-//					}
-//				}
-//			}	
-//		}
-//	}
+	public void sprayAndWait(Drone A, Drone B, int sourceA, int sourceB){
+		for(int i=0; i<B.dataObject.size(); i++){
+			if(!A.ACK.contains(B.dataObject.get(i).getHashCode())){
+				if(!A.hashCode.contains(B.dataObject.get(i).getHashCode())){
+					if(B.dataObject.get(i).getSource()==sourceB){
+						if(!(B.copies==0)){
+							A.hashCode.add(B.dataObject.get(i).getHashCode());
+							A.dataObject.add(B.dataObject.get(i));
+							B.copies --;
+						}
+					}
+				}
+			}
+		}
+		
+		for(int j=0; j<A.dataObject.size(); j++){
+			if(!B.ACK.contains(A.dataObject.get(j).getHashCode())){
+				if(!B.hashCode.contains(A.dataObject.get(j).getHashCode())){
+					if(A.dataObject.get(j).getSource()==sourceA){
+						if(!(A.copies==0)){
+							B.hashCode.add(A.dataObject.get(j).getHashCode());
+							B.dataObject.add(A.dataObject.get(j));
+							A.copies--;
+						}
+					}
+				}
+			}	
+		}
+	}
 
 	public void captainsCommunication(Captain captain, Drone drone){
 		for(int i=0; i<drone.dataObject.size(); i++){
