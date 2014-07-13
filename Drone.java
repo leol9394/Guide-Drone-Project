@@ -22,6 +22,9 @@ public class Drone implements Steppable{
 	
 	protected long ACKTimestamp;
 	protected long ACKDuration = 30; 	// The duration that ACK exist, in seconds.
+	protected long startTime;
+	protected long duration;
+	protected long endTime;
 	
 	protected int copies = 1;
 	
@@ -31,14 +34,14 @@ public class Drone implements Steppable{
 	
 	public String toString() {
 		if(!dataObject.isEmpty()){
-			String result = "Drone: "+droneNumber+" Data: ";
+			String result = "Drone: "+droneNumber+" Time: "+((int)duration/100)+"s Data: ";
 			for(int i=0; i<dataObject.size(); i++){
 				result += " " + dataObject.get(i).getData();
 			}
 			return result;
 		}
 		else{
-			String result = "Drone: "+droneNumber;
+			String result = "Drone: "+droneNumber+" Time: "+((int)duration/100)+"s";
 			return result;
 		}
 	}
@@ -102,6 +105,8 @@ public class Drone implements Steppable{
 		move(state);
 		
 		vaccination();
+		
+		timer();
 	}
 	
 	public void move(SimState state){
@@ -160,6 +165,23 @@ public class Drone implements Steppable{
 				ACKTimestamp = 0;
 			}
 		}
-
+	}
+	
+	public void timer(){
+		boolean flag = false;
+		if(!flag){
+			for(int i=0; i<dataObject.size(); i++){
+				if(dataObject.get(i).getSource()==droneNumber){
+					duration = (System.currentTimeMillis() - startTime);
+				}
+				else{
+					endTime = System.currentTimeMillis();
+					flag = true;
+				}
+			}
+		}
+		else{
+			duration = (endTime - startTime);
+		}
 	}
 }

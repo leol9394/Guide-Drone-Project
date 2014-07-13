@@ -51,8 +51,8 @@ public class Demo extends SimState{
 						
 						((Drone)(getDrones.objs[i])).nearbyDrones.add(j);
 						
-						//epidemic(((Drone)(getDrones.objs[i])),((Drone)(getDrones.objs[j])));
-						sprayAndWait(((Drone)(getDrones.objs[i])),((Drone)(getDrones.objs[j])), i, j);
+						epidemic(((Drone)(getDrones.objs[i])),((Drone)(getDrones.objs[j])));
+						//sprayAndWait(((Drone)(getDrones.objs[i])),((Drone)(getDrones.objs[j])), i, j);
 						
 						dronesACKCommunication(((Drone)(getDrones.objs[i])),((Drone)(getDrones.objs[j])));
 					}
@@ -88,6 +88,7 @@ public class Demo extends SimState{
 					((Captain)(getCaptains.objs[i])).nearbyDrones.add(j);
 					
 					captainsCommunication(((Captain)(getCaptains.objs[i])), ((Drone)(getDrones.objs[j])));
+					
 				}
 				else{
 					captainConnectedDrones[i][j] = "Not Connected";
@@ -247,6 +248,8 @@ public class Demo extends SimState{
 			initialDroneX = initialDroneX + drones.getWidth() * 0.15;
 			initialDroneY = initialDroneY + drones.getHeight() * 0.2;
 			
+			drone.startTime = System.currentTimeMillis();
+			
 			schedule.scheduleRepeating(drone);
 		}
 		
@@ -256,6 +259,8 @@ public class Demo extends SimState{
 			
 			initialCaptainX = initialCaptainX + captains.getWidth() * 0.4;
 			initialCaptainY = initialCaptainY + captains.getHeight() *0.2;
+			
+			captain.startTime = System.currentTimeMillis();
 			
 		    schedule.scheduleRepeating(captain);
 		}

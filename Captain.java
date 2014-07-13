@@ -17,18 +17,26 @@ public class Captain implements Steppable{
 	protected ArrayList<Integer> nearbyDrones;
 	protected ArrayList<HashCode> hashCode = new ArrayList<HashCode>();
 	
+	protected long startTime;
+	protected long duration;
+	protected long endTime;
+	
 	public String toString() {
 		if(!dataObject.isEmpty()){
-			String result = "Captain Data: ";
+			String result = "Captain Time: "+((int)(duration/1000))+"s Data: ";
 			for(int i=0; i<dataObject.size(); i++){
 				result += " " + dataObject.get(i).getData();
 			}
 			return result;
 		}
 		else{
-			String result = "Captain";
+			String result = "Captain Time: "+((int)(duration/1000))+"s";
 			return result;
 		}
+	}
+	
+	public long getDuration(){
+		return duration;
 	}
 	
 	public ArrayList<Integer> getNearbyDrones(){
@@ -86,5 +94,23 @@ public class Captain implements Steppable{
 		
 		demo.captains.setObjectLocation(this, new Double2D(sumNavigation));
 		
+		timer(demo);
+		
+	}
+	
+	public void timer(Demo demo){
+		boolean flag = false;
+		if(!flag){
+			if(!(dataObject.size()==(demo.numDrones*demo.numData))){
+				duration = (System.currentTimeMillis() - startTime);
+			}
+			else{
+				endTime = System.currentTimeMillis();
+				flag = true;
+			}
+		}
+		else{
+			duration = (endTime - startTime);
+		}
 	}
 }
