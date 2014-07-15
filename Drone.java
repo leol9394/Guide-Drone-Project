@@ -20,11 +20,15 @@ public class Drone implements Steppable{
 	protected ArrayList<HashCode> hashCode = new ArrayList<HashCode>();
 	protected ArrayList<HashCode> ACK = new ArrayList<HashCode>();
 	
-	protected long ACKTimestamp;
-	protected long ACKDuration = 30; 	// The duration that ACK exist, in seconds.
-	protected long startTime;
-	protected long duration;
-	protected long endTime;
+	//The time for the ACKs in the drone.
+	protected double ACKTimestamp;
+	protected double ACKDuration = 5000; 	// The duration that ACK exist, in simulator steps.
+	protected double currentTime;
+	
+	//The attributes for computing the time that the drone pass its own data to the Captain.
+	protected double startTime;
+	protected double duration;
+	protected double endTime;
 	
 	protected int copies = 1;
 	
@@ -34,14 +38,14 @@ public class Drone implements Steppable{
 	
 	public String toString() {
 		if(!dataObject.isEmpty()){
-			String result = "Drone: "+droneNumber+" Time: "+((int)duration/1000)+"s Data: ";
+			String result = "Drone: "+droneNumber+" Time: "+duration+" Data: ";
 			for(int i=0; i<dataObject.size(); i++){
 				result += " " + dataObject.get(i).getData();
 			}
 			return result;
 		}
 		else{
-			String result = "Drone: "+droneNumber+" Time: "+((int)duration/1000)+"s";
+			String result = "Drone: "+droneNumber+" Time: "+duration;
 			return result;
 		}
 	}
@@ -50,14 +54,23 @@ public class Drone implements Steppable{
 		return nearbyDrones;
 	}
 	
-	public long getACKDuration(){
+	public double getACKDuration(){
 		if(ACKTimestamp == 0){
 			return ACKTimestamp;
 		}
 		else{
-			return (System.nanoTime() - ACKTimestamp);
+			//return (System.nanoTime() - ACKTimestamp);
+			return (currentTime - ACKTimestamp);
 		}
 	}
+	
+//	public ArrayList<Long> getTime(){
+//		ArrayList<Long> time = new ArrayList<Long>();
+//		for(int i=0; i<dataObject.size(); i++){
+//			time.add(dataObject.get(i).getTime());
+//		}
+//		return time;
+//	}
 
 //	public ArrayList<Integer> getDataSource(){
 //		ArrayList<Integer> dataSource = new ArrayList<Integer>();
@@ -104,9 +117,6 @@ public class Drone implements Steppable{
 
 		move(state);
 		
-		vaccination();
-		
-		timer();
 	}
 	
 	public void move(SimState state){
@@ -137,15 +147,21 @@ public class Drone implements Steppable{
 		else{
 			wayPointX =drones.getWidth() * demo.random.nextDouble();
 			wayPointY =drones.getHeight() * demo.random.nextDouble();
-		}		    
+		}
+		
+		vaccination(demo);
+		
+		timer(demo);
 	}
 	
-	public void vaccination(){
+	public void vaccination(Demo demo){
 		
-		long currentTime = System.nanoTime();
+		//long currentTime = System.nanoTime();
+		currentTime = demo.schedule.getTime();
 		
 		if(!ACK.isEmpty()){
-			if((currentTime - ACKTimestamp) < (ACKDuration * Math.pow(10.0, 9))){
+			//if((currentTime - ACKTimestamp) < (ACKDuration * Math.pow(10.0, 9))){
+			if((currentTime - ACKTimestamp) < ACKDuration){
 				if(!dataObject.isEmpty()){
 					for(int i=0; i<ACK.size(); i++){
 						if(hashCode.contains(ACK.get(i))){
@@ -167,21 +183,38 @@ public class Drone implements Steppable{
 		}
 	}
 	
-	public void timer(){
-		boolean isSourceDataSent = false;
-		if(!isSourceDataSent){
+	public void timer(Demo demo){
+		boolean isItselfDataSent = false;
+		if(!isItselfDataSent){
 			for(int i=0; i<dataObject.size(); i++){
 				if(dataObject.get(i).getSource()==droneNumber){
-					duration = (System.currentTimeMillis() - startTime);
+					duration = (demo.schedule.getTime() - startTime);
 				}
 				else{
-					endTime = System.currentTimeMillis();
-					isSourceDataSent = true;
+					endTime = demo.schedule.getTime();
+					isItselfDataSent = true;
 				}
 			}
 		}
 		else{
 			duration = (endTime - startTime);
 		}
+		
+//		This is the wallock time.
+//		boolean isItselfDataSent = false;
+//		if(!isItselfDataSent){
+//			for(int i=0; i<dataObject.size(); i++){
+//				if(dataObject.get(i).getSource()==droneNumber){
+//					duration = (System.currentTimeMillis() - startTime);
+//				}
+//				else{
+//					endTime = System.currentTimeMillis();
+//					isItselfDataSent = true;
+//				}
+//			}
+//		}
+//		else{
+//			duration = (endTime - startTime);
+//		}
 	}
 }

@@ -17,25 +17,26 @@ public class Captain implements Steppable{
 	protected ArrayList<Integer> nearbyDrones;
 	protected ArrayList<HashCode> hashCode = new ArrayList<HashCode>();
 	
-	protected long startTime;
-	protected long duration;
-	protected long endTime;
+	//The attributes for computing the time that the Captain has received all the data.
+	protected double startTime;
+	protected double duration;
+	protected double endTime;
 	
 	public String toString() {
 		if(!dataObject.isEmpty()){
-			String result = "Captain Time: "+((int)(duration/1000))+"s Data: ";
+			String result = "Captain Time: "+duration+" Data: ";
 			for(int i=0; i<dataObject.size(); i++){
 				result += " " + dataObject.get(i).getData();
 			}
 			return result;
 		}
 		else{
-			String result = "Captain Time: "+((int)(duration/1000))+"s";
+			String result = "Captain Time: "+duration;
 			return result;
 		}
 	}
 	
-	public long getDuration(){
+	public double getDuration(){
 		return duration;
 	}
 	
@@ -102,15 +103,30 @@ public class Captain implements Steppable{
 		boolean isAllDataReceivedYet = false;
 		if(!isAllDataReceivedYet){
 			if(!(dataObject.size()==(demo.numDrones*demo.numData))){
-				duration = (System.currentTimeMillis() - startTime);
+				duration = (demo.schedule.getTime() - startTime);
 			}
 			else{
-				endTime = System.currentTimeMillis();
+				endTime = demo.schedule.getTime();
 				isAllDataReceivedYet = true;
 			}
 		}
 		else{
 			duration = (endTime - startTime);
 		}
+
+//		This is the wallock time.
+//		boolean isAllDataReceivedYet = false;
+//		if(!isAllDataReceivedYet){
+//			if(!(dataObject.size()==(demo.numDrones*demo.numData))){
+//				duration = (System.currentTimeMillis() - startTime);
+//			}
+//			else{
+//				endTime = System.currentTimeMillis();
+//				isAllDataReceivedYet = true;
+//			}
+//		}
+//		else{
+//			duration = (endTime - startTime);
+//		}
 	}
 }

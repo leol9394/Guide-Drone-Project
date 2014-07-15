@@ -170,7 +170,8 @@ public class Demo extends SimState{
 			}
 		}
 		
-		drone.ACKTimestamp = System.nanoTime();
+		//drone.ACKTimestamp = System.nanoTime();
+		drone.ACKTimestamp = schedule.getTime();
 		
 		// Sorted the data depend on timestamp
 		Collections.sort(captain.dataObject, new Comparator<DataObject>(){
@@ -248,7 +249,8 @@ public class Demo extends SimState{
 			initialDroneX = initialDroneX + drones.getWidth() * 0.15;
 			initialDroneY = initialDroneY + drones.getHeight() * 0.2;
 			
-			drone.startTime = System.currentTimeMillis();
+			//drone.startTime = System.currentTimeMillis();
+			drone.startTime = schedule.getTime();
 			
 			schedule.scheduleRepeating(drone);
 		}
@@ -260,7 +262,8 @@ public class Demo extends SimState{
 			initialCaptainX = initialCaptainX + captains.getWidth() * 0.4;
 			initialCaptainY = initialCaptainY + captains.getHeight() *0.2;
 			
-			captain.startTime = System.currentTimeMillis();
+			//captain.startTime = System.currentTimeMillis();
+			captain.startTime = schedule.getTime();
 			
 		    schedule.scheduleRepeating(captain);
 		}
