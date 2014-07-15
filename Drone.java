@@ -34,14 +34,14 @@ public class Drone implements Steppable{
 	
 	public String toString() {
 		if(!dataObject.isEmpty()){
-			String result = "Drone: "+droneNumber+" Time: "+((int)duration/100)+"s Data: ";
+			String result = "Drone: "+droneNumber+" Time: "+((int)duration/1000)+"s Data: ";
 			for(int i=0; i<dataObject.size(); i++){
 				result += " " + dataObject.get(i).getData();
 			}
 			return result;
 		}
 		else{
-			String result = "Drone: "+droneNumber+" Time: "+((int)duration/100)+"s";
+			String result = "Drone: "+droneNumber+" Time: "+((int)duration/1000)+"s";
 			return result;
 		}
 	}
@@ -168,15 +168,15 @@ public class Drone implements Steppable{
 	}
 	
 	public void timer(){
-		boolean flag = false;
-		if(!flag){
+		boolean isSourceDataSent = false;
+		if(!isSourceDataSent){
 			for(int i=0; i<dataObject.size(); i++){
 				if(dataObject.get(i).getSource()==droneNumber){
 					duration = (System.currentTimeMillis() - startTime);
 				}
 				else{
 					endTime = System.currentTimeMillis();
-					flag = true;
+					isSourceDataSent = true;
 				}
 			}
 		}

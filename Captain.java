@@ -99,14 +99,14 @@ public class Captain implements Steppable{
 	}
 	
 	public void timer(Demo demo){
-		boolean flag = false;
-		if(!flag){
+		boolean isAllDataReceivedYet = false;
+		if(!isAllDataReceivedYet){
 			if(!(dataObject.size()==(demo.numDrones*demo.numData))){
 				duration = (System.currentTimeMillis() - startTime);
 			}
 			else{
 				endTime = System.currentTimeMillis();
-				flag = true;
+				isAllDataReceivedYet = true;
 			}
 		}
 		else{
