@@ -3,6 +3,7 @@ package sim.app.drones;
 
 import java.util.ArrayList;
 
+import sim.app.drones.DataObject.HashCode;
 import sim.engine.*;
 import sim.field.continuous.*;
 import sim.util.*;
@@ -29,9 +30,13 @@ public class Drone implements Steppable{
 	protected double startTime;
 	protected double duration;
 	protected double endTime;
+	protected boolean isItselfDataSent;
+	protected boolean isResultWritten = false;
 	
+	//The copies for the Spray and Wait Routing Protocol.
 	protected int copies = 1;
 	
+	// The velocity of the drones.
 	protected double wayPointX;
 	protected double wayPointY;
 	protected double velocity = 0.05;
@@ -155,7 +160,6 @@ public class Drone implements Steppable{
 	}
 	
 	public void vaccination(Demo demo){
-		
 		//long currentTime = System.nanoTime();
 		currentTime = demo.schedule.getTime();
 		
@@ -184,7 +188,7 @@ public class Drone implements Steppable{
 	}
 	
 	public void timer(Demo demo){
-		boolean isItselfDataSent = false;
+		isItselfDataSent = false;
 		if(!isItselfDataSent){
 			for(int i=0; i<dataObject.size(); i++){
 				if(dataObject.get(i).getSource()==droneNumber){

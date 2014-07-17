@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
+import sim.app.drones.DataObject.HashCode;
 import sim.engine.*;
 import sim.util.*;
 import sim.field.continuous.*;
@@ -23,8 +24,14 @@ public class Demo extends SimState{
 	protected double initialCaptainX = 20.0;
 	protected double initialCaptainY = 50.0;
 	
-	protected String[][] encounteringDrones;
-	protected String[][] captainConnectedDrones;
+	private static String[][] encounteringDrones;
+	private static String[][] captainConnectedDrones;
+	
+	private String fileName = "/Users/Leo/Documents/MASON/mason/sim/app/drones/Record.txt";
+	private ArrayList<String> dataOutput = new ArrayList<String>();
+	private boolean[] outputState = new boolean[numDrones+numCaptains];
+	private String[] dataTemp = new String[numDrones+numCaptains];
+	private boolean allDataWritten = false;
 	
 	public Demo(long seed){
 		super(seed);
@@ -32,7 +39,8 @@ public class Demo extends SimState{
 	
 	public String[][] getDronesCommunication(){
 		Bag getDrones = drones.allObjects;
-		encounteringDrones = new String[getDrones.numObjs][getDrones.numObjs];
+		encounteringDrones = new String[numDrones][numDrones];
+		
 		for(int i=0; i<getDrones.numObjs; i++){
 			
 			((Drone)(getDrones.objs[i])).nearbyDrones = new ArrayList<Integer>();
@@ -45,8 +53,7 @@ public class Demo extends SimState{
 				
 				if(distance<=range){
 					encounteringDrones[i][j]="Connected";
-					
-					// Preventing drone epidemic to itself
+
 					if(i!=j){
 						
 						((Drone)(getDrones.objs[i])).nearbyDrones.add(j);
@@ -54,7 +61,7 @@ public class Demo extends SimState{
 						epidemic(((Drone)(getDrones.objs[i])),((Drone)(getDrones.objs[j])));
 						//sprayAndWait(((Drone)(getDrones.objs[i])),((Drone)(getDrones.objs[j])), i, j);
 						
-						dronesACKCommunication(((Drone)(getDrones.objs[i])),((Drone)(getDrones.objs[j])));
+						dronesACKsCommunication(((Drone)(getDrones.objs[i])),((Drone)(getDrones.objs[j])));
 					}
 				}
 				else{
@@ -69,8 +76,7 @@ public class Demo extends SimState{
 	public String[][] getCaptainCommunication(){
 		Bag getDrones = drones.allObjects;
 		Bag getCaptains = captains.allObjects;
-		
-		captainConnectedDrones = new String[getCaptains.numObjs][getDrones.numObjs];
+		captainConnectedDrones = new String[numCaptains][numDrones];
 		
 		for(int i=0; i<getCaptains.numObjs; i++){
 			
@@ -87,7 +93,7 @@ public class Demo extends SimState{
 					
 					((Captain)(getCaptains.objs[i])).nearbyDrones.add(j);
 					
-					captainsCommunication(((Captain)(getCaptains.objs[i])), ((Drone)(getDrones.objs[j])));
+					captainsDronesCommunication(((Captain)(getCaptains.objs[i])), ((Drone)(getDrones.objs[j])));
 					
 				}
 				else{
@@ -96,6 +102,62 @@ public class Demo extends SimState{
 			}	
 		}
 		return captainConnectedDrones;
+	}
+	
+	public String[] getDataOutput(){
+		Bag getCaptains = captains.allObjects; 
+		Bag getDrones = drones.allObjects;
+		
+		for(int i=0; i<getCaptains.numObjs; i++){
+			if(((Captain)(getCaptains.objs[i])).isAllDataReceivedYet){
+				if(!((Captain)(getCaptains.objs[i])).isResultWritten){
+					String durationOutput = String.valueOf(((Captain)(getCaptains.objs[i])).duration);
+					dataTemp[i] = durationOutput;
+					((Captain)(getCaptains.objs[i])).isResultWritten = true;
+					outputState[i] = ((Captain)(getCaptains.objs[i])).isResultWritten;
+				}
+			}
+		}
+		
+		for(int j=0; j<getDrones.numObjs; j++){
+			if(droneItselfDataSentChecker(((Drone)(getDrones.objs[j])))){
+				if(!((Drone)(getDrones.objs[j])).isResultWritten){
+					String durationOutput = String.valueOf(((Drone)(getDrones.objs[j])).duration);
+					dataTemp[j+numCaptains] = durationOutput;
+					((Drone)(getDrones.objs[j])).isResultWritten = true;
+					outputState[j+numCaptains] = ((Drone)(getDrones.objs[j])).isResultWritten;
+				}
+			}
+		}
+		
+		if(!allDataWritten){
+			if(outputStateChecker(outputState)){
+				for(int i=0; i<dataTemp.length; i++){
+					dataOutput.add(dataTemp[i]);
+				}
+				FileOutput.insertFile(fileName, dataOutput);
+				allDataWritten = true;
+			}
+		}
+		return dataTemp;
+	}
+	
+	public boolean droneItselfDataSentChecker(Drone drone){
+		for(int i=0; i<drone.dataObject.size(); i++){
+			if(drone.dataObject.get(i).getSource()==drone.droneNumber){
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	public boolean outputStateChecker(boolean[] array){
+		for(int i=0; i<array.length; i++){
+			if(!array[i]){
+				return false;
+			}
+		}
+		return true;
 	}
 	
 	public void epidemic(Drone A, Drone B){
@@ -150,7 +212,7 @@ public class Demo extends SimState{
 		}
 	}
 
-	public void captainsCommunication(Captain captain, Drone drone){
+	public void captainsDronesCommunication(Captain captain, Drone drone){
 		for(int i=0; i<drone.dataObject.size(); i++){
 			if(!captain.hashCode.contains(drone.dataObject.get(i).getHashCode())){
 
@@ -189,7 +251,7 @@ public class Demo extends SimState{
 		});
 	}
 	
-	public void dronesACKCommunication(Drone A, Drone B){
+	public void dronesACKsCommunication(Drone A, Drone B){
 		if(!A.ACK.isEmpty() && B.ACK.isEmpty()){
 			for(int i=0; i<A.ACK.size(); i++){
 				B.ACK.add(A.ACK.get(i));

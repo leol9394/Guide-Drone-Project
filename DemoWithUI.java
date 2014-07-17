@@ -17,7 +17,6 @@ public class DemoWithUI extends GUIState{
 	ContinuousPortrayal2D dronePortrayal = new ContinuousPortrayal2D();
 	ContinuousPortrayal2D captainPortrayal = new ContinuousPortrayal2D();
 
-
 	public static void main(String[] args) {
 		DemoWithUI vid = new DemoWithUI();
 		Console c = new Console(vid);

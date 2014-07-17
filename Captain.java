@@ -2,6 +2,7 @@ package sim.app.drones;
 
 import java.util.ArrayList;
 
+import sim.app.drones.DataObject.HashCode;
 import sim.engine.SimState;
 import sim.engine.Steppable;
 import sim.field.continuous.Continuous2D;
@@ -21,6 +22,9 @@ public class Captain implements Steppable{
 	protected double startTime;
 	protected double duration;
 	protected double endTime;
+	protected boolean isAllDataReceivedYet = false;
+	protected boolean isResultReadyToWrite = false;
+	protected boolean isResultWritten = false;
 	
 	public String toString() {
 		if(!dataObject.isEmpty()){
@@ -100,7 +104,6 @@ public class Captain implements Steppable{
 	}
 	
 	public void timer(Demo demo){
-		boolean isAllDataReceivedYet = false;
 		if(!isAllDataReceivedYet){
 			if(!(dataObject.size()==(demo.numDrones*demo.numData))){
 				duration = (demo.schedule.getTime() - startTime);
