@@ -30,7 +30,7 @@ public class Drone implements Steppable{
 	protected double startTime;
 	protected double duration;
 	protected double endTime;
-	protected boolean isItselfDataSent;
+	protected boolean isItselfDataSent = false;
 	protected boolean isResultWritten = false;
 	
 	//The copies for the Spray and Wait Routing Protocol.
@@ -39,7 +39,7 @@ public class Drone implements Steppable{
 	// The velocity of the drones.
 	protected double wayPointX;
 	protected double wayPointY;
-	protected double velocity = 0.05;
+	protected double velocity = 0.1; // 0.1 meters per time step
 	
 	public String toString() {
 		if(!dataObject.isEmpty()){
@@ -188,20 +188,17 @@ public class Drone implements Steppable{
 	}
 	
 	public void timer(Demo demo){
-		isItselfDataSent = false;
-		if(!isItselfDataSent){
-			for(int i=0; i<dataObject.size(); i++){
-				if(dataObject.get(i).getSource()==droneNumber){
-					duration = (demo.schedule.getTime() - startTime);
-				}
-				else{
-					endTime = demo.schedule.getTime();
-					isItselfDataSent = true;
-				}
-			}
-		}
-		else{
+		if(isItselfDataSent){
 			duration = (endTime - startTime);
+		}
+		else{	
+			if(droneItselfDataSentChecker()){
+				endTime = demo.schedule.getTime();
+				isItselfDataSent = true;
+			}
+			else{
+				duration = (demo.schedule.getTime() - startTime);
+			}
 		}
 		
 //		This is the wallock time.
@@ -220,5 +217,14 @@ public class Drone implements Steppable{
 //		else{
 //			duration = (endTime - startTime);
 //		}
+	}
+	
+	public boolean droneItselfDataSentChecker(){
+		for(int i=0; i<dataObject.size(); i++){
+			if(dataObject.get(i).getSource()==droneNumber){
+				return false;
+			}
+		}
+		return true;
 	}
 }

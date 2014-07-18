@@ -19,18 +19,24 @@ public class Demo extends SimState{
 	protected int numDrones = 5;
 	protected int numData = 1;
 	
-	protected double initialDroneX = 20.0;
-	protected double initialDroneY = 10.0;
+	protected double initialDroneX;
+	protected double initialDroneY;
 	protected double initialCaptainX = 20.0;
 	protected double initialCaptainY = 50.0;
+	protected double initialDroneAngleDegree = 80.0;
+	protected double initialDroneAngleRadian;
+	protected double captainsDronesRadius = 45.0;
+	protected double dronePositionGap = 40.0;
 	
 	private static String[][] encounteringDrones;
 	private static String[][] captainConnectedDrones;
 	
-	private String fileName = "/Users/Leo/Documents/MASON/mason/sim/app/drones/Record.txt";
-	private ArrayList<String> dataOutput = new ArrayList<String>();
-	private boolean[] outputState = new boolean[numDrones+numCaptains];
-	private String[] dataTemp = new String[numDrones+numCaptains];
+	private int recordTimeStep = 1000;
+	private String allDataReceived = "/Users/Leo/Documents/MASON/mason/sim/app/drones/AllDataReceived.txt";
+	private String stopAtFixedTimeStep = "/Users/Leo/Documents/MASON/mason/sim/app/drones/StopAtFixedTimeStep.txt";
+	private boolean[] allDataReceivedOutputState = new boolean[numDrones+numCaptains];
+	private String[] allDataReceivedOutput = new String[numDrones+numCaptains];
+	private String[] stopAtFixedTimeStepOutput = new String[numDrones+numCaptains];
 	private boolean allDataWritten = false;
 	
 	public Demo(long seed){
@@ -112,10 +118,15 @@ public class Demo extends SimState{
 			if(((Captain)(getCaptains.objs[i])).isAllDataReceivedYet){
 				if(!((Captain)(getCaptains.objs[i])).isResultWritten){
 					String durationOutput = String.valueOf(((Captain)(getCaptains.objs[i])).duration);
-					dataTemp[i] = durationOutput;
+					allDataReceivedOutput[i] = durationOutput;
 					((Captain)(getCaptains.objs[i])).isResultWritten = true;
-					outputState[i] = ((Captain)(getCaptains.objs[i])).isResultWritten;
+					allDataReceivedOutputState[i] = ((Captain)(getCaptains.objs[i])).isResultWritten;
 				}
+			}
+			
+			if(schedule.getTime()==recordTimeStep){
+				String numCaptainHoldObjects = String.valueOf(((Captain)(getCaptains.objs[i])).dataObject.size());
+				stopAtFixedTimeStepOutput[i] = numCaptainHoldObjects;
 			}
 		}
 		
@@ -123,23 +134,36 @@ public class Demo extends SimState{
 			if(droneItselfDataSentChecker(((Drone)(getDrones.objs[j])))){
 				if(!((Drone)(getDrones.objs[j])).isResultWritten){
 					String durationOutput = String.valueOf(((Drone)(getDrones.objs[j])).duration);
-					dataTemp[j+numCaptains] = durationOutput;
+					allDataReceivedOutput[j+numCaptains] = durationOutput;
 					((Drone)(getDrones.objs[j])).isResultWritten = true;
-					outputState[j+numCaptains] = ((Drone)(getDrones.objs[j])).isResultWritten;
+					allDataReceivedOutputState[j+numCaptains] = ((Drone)(getDrones.objs[j])).isResultWritten;
 				}
+			}
+			
+			if(schedule.getTime()==recordTimeStep){
+				String isItselfDataSent;
+				if(droneItselfDataSentChecker(((Drone)(getDrones.objs[j])))){
+					isItselfDataSent = "1";
+				}
+				else{
+					isItselfDataSent = "0";
+				}
+				stopAtFixedTimeStepOutput[j+numCaptains] = isItselfDataSent;
 			}
 		}
 		
 		if(!allDataWritten){
-			if(outputStateChecker(outputState)){
-				for(int i=0; i<dataTemp.length; i++){
-					dataOutput.add(dataTemp[i]);
-				}
-				FileOutput.insertFile(fileName, dataOutput);
+			if(outputStateChecker(allDataReceivedOutputState)){
+				FileOutput.insertFile(allDataReceived, allDataReceivedOutput);
 				allDataWritten = true;
+				//System.exit(0);
 			}
 		}
-		return dataTemp;
+		
+		if(schedule.getTime()==recordTimeStep){
+			FileOutput.insertFile(stopAtFixedTimeStep, stopAtFixedTimeStepOutput);
+		}
+		return allDataReceivedOutput;
 	}
 	
 	public boolean droneItselfDataSentChecker(Drone drone){
@@ -288,13 +312,16 @@ public class Demo extends SimState{
 		
 		captains.clear();
 		
+		initialDroneAngleRadian = Math.toRadians(initialDroneAngleDegree);
+		initialDroneX = initialCaptainX + captainsDronesRadius * Math.cos(initialDroneAngleRadian);
+		initialDroneY = initialCaptainY - captainsDronesRadius * Math.sin(initialDroneAngleRadian);
+		
 		for(int i=0; i<numDrones; i++){
 			Drone drone = new Drone();
 			drone.droneNumber=i;
 			drone.wayPointX = drones.getWidth() * random.nextDouble();
 			drone.wayPointY = drones.getHeight() * random.nextDouble();
 
-			
 			for(int j=0; j<numData; j++){
 				DataObject data = new DataObject();
 				data.setSource(drone.droneNumber);
@@ -308,8 +335,10 @@ public class Demo extends SimState{
 			
 			drones.setObjectLocation(drone, new Double2D(initialDroneX, initialDroneY));
 			
-			initialDroneX = initialDroneX + drones.getWidth() * 0.15;
-			initialDroneY = initialDroneY + drones.getHeight() * 0.2;
+			initialDroneAngleDegree = initialDroneAngleDegree - dronePositionGap;
+			initialDroneAngleRadian = Math.toRadians(initialDroneAngleDegree);
+			initialDroneX = initialCaptainX + captainsDronesRadius * Math.cos(initialDroneAngleRadian);
+			initialDroneY = initialCaptainY - captainsDronesRadius * Math.sin(initialDroneAngleRadian);
 			
 			//drone.startTime = System.currentTimeMillis();
 			drone.startTime = schedule.getTime();
@@ -322,7 +351,7 @@ public class Demo extends SimState{
 			captains.setObjectLocation(captain, new Double2D(initialCaptainX, initialCaptainY));
 			
 			initialCaptainX = initialCaptainX + captains.getWidth() * 0.4;
-			initialCaptainY = initialCaptainY + captains.getHeight() *0.2;
+			initialCaptainY = initialCaptainY + captains.getHeight() * 0.2;
 			
 			//captain.startTime = System.currentTimeMillis();
 			captain.startTime = schedule.getTime();

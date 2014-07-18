@@ -104,17 +104,17 @@ public class Captain implements Steppable{
 	}
 	
 	public void timer(Demo demo){
-		if(!isAllDataReceivedYet){
-			if(!(dataObject.size()==(demo.numDrones*demo.numData))){
-				duration = (demo.schedule.getTime() - startTime);
-			}
-			else{
+		if(isAllDataReceivedYet){
+			duration = (endTime - startTime);
+		}
+		else{
+			if(dataObject.size()==(demo.numDrones*demo.numData)){
 				endTime = demo.schedule.getTime();
 				isAllDataReceivedYet = true;
 			}
-		}
-		else{
-			duration = (endTime - startTime);
+			else{
+				duration = (demo.schedule.getTime() - startTime);
+			}
 		}
 
 //		This is the wallock time.
