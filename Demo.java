@@ -26,18 +26,24 @@ public class Demo extends SimState{
 	protected double initialDroneAngleDegree = 80.0;
 	protected double initialDroneAngleRadian;
 	protected double captainsDronesRadius = 45.0;
-	protected double dronePositionGap = 40.0;
+	protected double dronePositionGapDegree = 40.0;
 	
 	private static String[][] encounteringDrones;
 	private static String[][] captainConnectedDrones;
 	
 	private int recordTimeStep = 1000;
-	private String allDataReceived = "/Users/Leo/Documents/MASON/mason/sim/app/drones/AllDataReceived.txt";
-	private String stopAtFixedTimeStep = "/Users/Leo/Documents/MASON/mason/sim/app/drones/StopAtFixedTimeStep.txt";
+//	private String allDataReceived = "/Users/Leo/Documents/MASON/mason/sim/app/drones/EpidemicAllDataReceived.txt";
+//	private String stopAtFixedTimeStep = "/Users/Leo/Documents/MASON/mason/sim/app/drones/EpidemicStopAtFixedTimeStep.txt";
+//	private String allDataReceived = "/Users/Leo/Documents/MASON/mason/sim/app/drones/SAndRAllDataReceived.txt";
+//	private String stopAtFixedTimeStep = "/Users/Leo/Documents/MASON/mason/sim/app/drones/SAndRStopAtFixedTimeStep.txt";
+	private String allDataReceived = "/Users/Leo/Documents/MASON/mason/sim/app/drones/TTLAllDataReceived.txt";
+	private String stopAtFixedTimeStep = "/Users/Leo/Documents/MASON/mason/sim/app/drones/TTLStopAtFixedTimeStep.txt";
 	private boolean[] allDataReceivedOutputState = new boolean[numDrones+numCaptains];
 	private String[] allDataReceivedOutput = new String[numDrones+numCaptains];
 	private String[] stopAtFixedTimeStepOutput = new String[numDrones+numCaptains];
-	private boolean allDataWritten = false;
+	private boolean allDataOutput = false;
+	private boolean fixedTimeDataOutput = false;
+	protected static boolean isTimeToLiveStart = false;
 	
 	public Demo(long seed){
 		super(seed);
@@ -66,6 +72,7 @@ public class Demo extends SimState{
 						
 						epidemic(((Drone)(getDrones.objs[i])),((Drone)(getDrones.objs[j])));
 						//sprayAndWait(((Drone)(getDrones.objs[i])),((Drone)(getDrones.objs[j])), i, j);
+						//timeToLive();
 						
 						dronesACKsCommunication(((Drone)(getDrones.objs[i])),((Drone)(getDrones.objs[j])));
 					}
@@ -152,17 +159,28 @@ public class Demo extends SimState{
 			}
 		}
 		
-		if(!allDataWritten){
+		if(!allDataOutput){
 			if(outputStateChecker(allDataReceivedOutputState)){
 				FileOutput.insertFile(allDataReceived, allDataReceivedOutput);
-				allDataWritten = true;
-				//System.exit(0);
+				allDataOutput = true;
 			}
 		}
 		
 		if(schedule.getTime()==recordTimeStep){
 			FileOutput.insertFile(stopAtFixedTimeStep, stopAtFixedTimeStepOutput);
+			fixedTimeDataOutput = true;
 		}
+		
+//		if(allDataOutput && fixedTimeDataOutput){
+//			if(FileOutput.readFile(allDataReceived)==260){
+//				System.exit(0);
+//			}
+//			else{
+//				String[] args = {};
+//				DataRecord.main(args);
+//			}
+//		}
+		
 		return allDataReceivedOutput;
 	}
 	
@@ -235,6 +253,10 @@ public class Demo extends SimState{
 			}	
 		}
 	}
+	
+	public void timeToLive(){
+		isTimeToLiveStart = true;
+	}
 
 	public void captainsDronesCommunication(Captain captain, Drone drone){
 		for(int i=0; i<drone.dataObject.size(); i++){
@@ -256,10 +278,8 @@ public class Demo extends SimState{
 			}
 		}
 		
-		//drone.ACKTimestamp = System.nanoTime();
 		drone.ACKTimestamp = schedule.getTime();
 		
-		// Sorted the data depend on timestamp
 		Collections.sort(captain.dataObject, new Comparator<DataObject>(){
 			@Override
 			public int compare(DataObject data1, DataObject data2){
@@ -335,12 +355,11 @@ public class Demo extends SimState{
 			
 			drones.setObjectLocation(drone, new Double2D(initialDroneX, initialDroneY));
 			
-			initialDroneAngleDegree = initialDroneAngleDegree - dronePositionGap;
+			initialDroneAngleDegree = initialDroneAngleDegree - dronePositionGapDegree;
 			initialDroneAngleRadian = Math.toRadians(initialDroneAngleDegree);
 			initialDroneX = initialCaptainX + captainsDronesRadius * Math.cos(initialDroneAngleRadian);
 			initialDroneY = initialCaptainY - captainsDronesRadius * Math.sin(initialDroneAngleRadian);
 			
-			//drone.startTime = System.currentTimeMillis();
 			drone.startTime = schedule.getTime();
 			
 			schedule.scheduleRepeating(drone);
@@ -353,7 +372,6 @@ public class Demo extends SimState{
 			initialCaptainX = initialCaptainX + captains.getWidth() * 0.4;
 			initialCaptainY = initialCaptainY + captains.getHeight() * 0.2;
 			
-			//captain.startTime = System.currentTimeMillis();
 			captain.startTime = schedule.getTime();
 			
 		    schedule.scheduleRepeating(captain);

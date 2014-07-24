@@ -21,6 +21,7 @@ public class DemoWithUI extends GUIState{
 		DemoWithUI vid = new DemoWithUI();
 		Console c = new Console(vid);
 		c.setVisible(true);
+		
 	}
 	
 	public DemoWithUI(){

@@ -21,9 +21,9 @@ public class Drone implements Steppable{
 	protected ArrayList<HashCode> hashCode = new ArrayList<HashCode>();
 	protected ArrayList<HashCode> ACK = new ArrayList<HashCode>();
 	
-	//The time for the ACKs in the drone.
 	protected double ACKTimestamp;
-	protected double ACKDuration = 5000; 	// The duration that ACK exist, in simulator steps.
+	// The duration that ACK exist, in simulator steps.
+	protected double ACKDuration = 3000; 	
 	protected double currentTime;
 	
 	//The attributes for computing the time that the drone pass its own data to the Captain.
@@ -34,12 +34,17 @@ public class Drone implements Steppable{
 	protected boolean isResultWritten = false;
 	
 	//The copies for the Spray and Wait Routing Protocol.
-	protected int copies = 1;
+	protected int copies = 3;
 	
-	// The velocity of the drones.
+	// The Time-to-Live protocol attributes
+	protected ArrayList<Integer> ownDataDuration = new ArrayList<Integer>();
+	protected ArrayList<Integer> itselfDataPosition = new ArrayList<Integer>();
+	protected int timeToLive = 50;
+	
 	protected double wayPointX;
 	protected double wayPointY;
-	protected double velocity = 0.1; // 0.1 meters per time step
+	// The velocity of the drones, 0.1 meters per time step
+	protected double velocity = 0.1; 
 	
 	public String toString() {
 		if(!dataObject.isEmpty()){
@@ -154,17 +159,17 @@ public class Drone implements Steppable{
 			wayPointY =drones.getHeight() * demo.random.nextDouble();
 		}
 		
+		timeToLive(demo);
+		
 		vaccination(demo);
 		
 		timer(demo);
 	}
 	
 	public void vaccination(Demo demo){
-		//long currentTime = System.nanoTime();
 		currentTime = demo.schedule.getTime();
 		
 		if(!ACK.isEmpty()){
-			//if((currentTime - ACKTimestamp) < (ACKDuration * Math.pow(10.0, 9))){
 			if((currentTime - ACKTimestamp) < ACKDuration){
 				if(!dataObject.isEmpty()){
 					for(int i=0; i<ACK.size(); i++){
@@ -200,23 +205,6 @@ public class Drone implements Steppable{
 				duration = (demo.schedule.getTime() - startTime);
 			}
 		}
-		
-//		This is the wallock time.
-//		boolean isItselfDataSent = false;
-//		if(!isItselfDataSent){
-//			for(int i=0; i<dataObject.size(); i++){
-//				if(dataObject.get(i).getSource()==droneNumber){
-//					duration = (System.currentTimeMillis() - startTime);
-//				}
-//				else{
-//					endTime = System.currentTimeMillis();
-//					isItselfDataSent = true;
-//				}
-//			}
-//		}
-//		else{
-//			duration = (endTime - startTime);
-//		}
 	}
 	
 	public boolean droneItselfDataSentChecker(){
@@ -226,5 +214,39 @@ public class Drone implements Steppable{
 			}
 		}
 		return true;
+	}
+	
+	public void timeToLive(Demo demo){
+		//if(Demo.isTimeToLiveStart){
+			ownDataDuration(demo);
+			ownDataDurationCheckerAndRemoval();
+		//}
+		
+	}
+	
+	public void ownDataDuration(Demo demo){
+		int j=0;
+		droneItselfDataPosition();
+		for(int i=0; i<itselfDataPosition.size(); i++){
+			ownDataDuration.add(j,(int)(demo.schedule.getTime() - dataObject.get(itselfDataPosition.get(i)).getTime()));
+			ownDataDuration.add(j+1,itselfDataPosition.get(i));
+			j = j+2;
+		}
+	}
+	
+	public void ownDataDurationCheckerAndRemoval(){
+		for(int i=0; i<ownDataDuration.size(); i=i+2){
+			if(ownDataDuration.get(i).equals(timeToLive)){
+				dataObject.remove(0);
+			}
+		}
+	}
+	
+	public void droneItselfDataPosition(){
+		for(int i=0; i<dataObject.size(); i++){
+			if(dataObject.get(i).getSource()==droneNumber){
+				itselfDataPosition.add(i);
+			}
+		}
 	}
 }
