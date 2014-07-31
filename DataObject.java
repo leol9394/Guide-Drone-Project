@@ -26,6 +26,7 @@ public class DataObject {
 	private int source;
 	private int data;
 	private long generatedTime;
+	private double timeStep;
 	private HashCode hashCode = new HashCode();
 	//private Object object;
 	
@@ -51,6 +52,14 @@ public class DataObject {
 	
 	public long getTime(){
 		return generatedTime;
+	}
+	
+	public void setTimeStep(double timeStep){
+		this.timeStep = timeStep;
+	}
+	
+	public double getTimeStep(){
+		return timeStep;
 	}
 	
 	public void setHashCode(int hashCode){

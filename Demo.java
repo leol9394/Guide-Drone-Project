@@ -15,9 +15,9 @@ public class Demo extends SimState{
 	
 	protected Continuous2D drones = new Continuous2D(1.0, 100, 100);
 	protected Continuous2D captains = new Continuous2D(1.0, 100, 100);
-	protected int numCaptains = 1;
-	protected int numDrones = 5;
-	protected int numData = 1;
+	protected static int numCaptains = 1;
+	protected static int numDrones = 5;
+	protected static int numData = 1;
 	
 	protected double initialDroneX;
 	protected double initialDroneY;
@@ -50,6 +50,9 @@ public class Demo extends SimState{
 	}
 	
 	public String[][] getDronesCommunication(){
+		//Start TTL or not.
+		//timeToLive();
+		
 		Bag getDrones = drones.allObjects;
 		encounteringDrones = new String[numDrones][numDrones];
 		
@@ -72,7 +75,6 @@ public class Demo extends SimState{
 						
 						epidemic(((Drone)(getDrones.objs[i])),((Drone)(getDrones.objs[j])));
 						//sprayAndWait(((Drone)(getDrones.objs[i])),((Drone)(getDrones.objs[j])), i, j);
-						//timeToLive();
 						
 						dronesACKsCommunication(((Drone)(getDrones.objs[i])),((Drone)(getDrones.objs[j])));
 					}
@@ -171,7 +173,7 @@ public class Demo extends SimState{
 			fixedTimeDataOutput = true;
 		}
 		
-//		if(allDataOutput && fixedTimeDataOutput){
+		if(allDataOutput && fixedTimeDataOutput){
 //			if(FileOutput.readFile(allDataReceived)==260){
 //				System.exit(0);
 //			}
@@ -179,7 +181,7 @@ public class Demo extends SimState{
 //				String[] args = {};
 //				DataRecord.main(args);
 //			}
-//		}
+		}
 		
 		return allDataReceivedOutput;
 	}
@@ -348,6 +350,7 @@ public class Demo extends SimState{
 				data.setData((int)i*10);
 				data.setTime(System.nanoTime());
 				data.setHashCodeGeneratedTime(data.getTime());
+				data.setTimeStep(schedule.getTime() + 1.0);
 				data.setHashCode(data.hashCode());
 				drone.hashCode.add(data.getHashCode());
 				drone.dataObject.add(data);

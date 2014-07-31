@@ -108,7 +108,7 @@ public class Captain implements Steppable{
 			duration = (endTime - startTime);
 		}
 		else{
-			if(dataObject.size()==(demo.numDrones*demo.numData)){
+			if(dataObject.size()==(Demo.numDrones*Demo.numData)){
 				endTime = demo.schedule.getTime();
 				isAllDataReceivedYet = true;
 			}

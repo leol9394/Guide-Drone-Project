@@ -37,8 +37,8 @@ public class Drone implements Steppable{
 	protected int copies = 3;
 	
 	// The Time-to-Live protocol attributes
-	protected ArrayList<Integer> ownDataDuration = new ArrayList<Integer>();
-	protected ArrayList<Integer> itselfDataPosition = new ArrayList<Integer>();
+	protected int[] ownDataDuration = new int[Demo.numData * 2];
+	protected int[] itselfDataPosition = new int[Demo.numData];
 	protected int timeToLive = 50;
 	
 	protected double wayPointX;
@@ -217,36 +217,57 @@ public class Drone implements Steppable{
 	}
 	
 	public void timeToLive(Demo demo){
-		//if(Demo.isTimeToLiveStart){
+		if(Demo.isTimeToLiveStart){
+//			TTL(demo);
+			droneItselfDataPosition();
 			ownDataDuration(demo);
 			ownDataDurationCheckerAndRemoval();
-		//}
+		}
 		
 	}
 	
 	public void ownDataDuration(Demo demo){
-		int j=0;
-		droneItselfDataPosition();
-		for(int i=0; i<itselfDataPosition.size(); i++){
-			ownDataDuration.add(j,(int)(demo.schedule.getTime() - dataObject.get(itselfDataPosition.get(i)).getTime()));
-			ownDataDuration.add(j+1,itselfDataPosition.get(i));
-			j = j+2;
+		if(!dataObject.isEmpty()){
+			int j=0;
+			for(int i=0; i<itselfDataPosition.length; i++){
+					ownDataDuration[j] = ((int)(demo.schedule.getTime() - dataObject.get(itselfDataPosition[i]).getTimeStep()));
+					ownDataDuration[j+1] = itselfDataPosition[i];
+					j = j+2;
+				}
 		}
 	}
 	
 	public void ownDataDurationCheckerAndRemoval(){
-		for(int i=0; i<ownDataDuration.size(); i=i+2){
-			if(ownDataDuration.get(i).equals(timeToLive)){
-				dataObject.remove(0);
+		if(!dataObject.isEmpty()){
+			for(int i=0; i<ownDataDuration.length; i=i+2){
+				if(ownDataDuration[i]==timeToLive){
+					dataObject.remove(ownDataDuration[i+1]);
+				}
+			}
+		}
+
+	}
+	
+	public void droneItselfDataPosition(){
+		int j = 0;
+		for(int i=0; i<dataObject.size(); i++){
+			if(dataObject.get(i).getSource()==droneNumber){
+				itselfDataPosition[j] = i;
+				j++;
 			}
 		}
 	}
 	
-	public void droneItselfDataPosition(){
-		for(int i=0; i<dataObject.size(); i++){
-			if(dataObject.get(i).getSource()==droneNumber){
-				itselfDataPosition.add(i);
-			}
-		}
-	}
+//	public void TTL(Demo demo){
+//	if(!droneItselfDataSentChecker()){
+//		for(int i=0; i<dataObject.size(); i++){
+//			if(dataObject.get(i).getSource()==droneNumber){
+//				if((demo.schedule.getTime() - dataObject.get(i).getTimeStep()) > timeToLive){
+//					dataObject.remove(i);
+//				}
+//			}
+//		}
+//	}
+//}
+	
 }
