@@ -1,6 +1,7 @@
 package sim.app.drones;
 
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 
 import sim.app.drones.DataObject.HashCode;
@@ -21,29 +22,31 @@ public class Drone implements Steppable{
 	protected ArrayList<HashCode> hashCode = new ArrayList<HashCode>();
 	protected ArrayList<HashCode> ACK = new ArrayList<HashCode>();
 	
+	/* The duration that ACK exist, in simulator steps. */
+	protected double ACKDuration = 3000;
 	protected double ACKTimestamp;
-	// The duration that ACK exist, in simulator steps.
-	protected double ACKDuration = 3000; 	
 	protected double currentTime;
 	
-	//The attributes for computing the time that the drone pass its own data to the Captain.
+	/* The attributes for computing the time that the drone pass its own data to the Captain. */
 	protected double startTime;
 	protected double duration;
 	protected double endTime;
 	protected boolean isItselfDataSent = false;
 	protected boolean isResultWritten = false;
 	
-	//The copies for the Spray and Wait Routing Protocol.
+	/* The copies for the Spray and Wait Routing Protocol. */
 	protected int copies = 3;
 	
-	// The Time-to-Live protocol attributes
+	/* The Time-to-Live protocol attributes. */
 	protected int[] ownDataDuration = new int[Demo.numData * 2];
 	protected int[] itselfDataPosition = new int[Demo.numData];
 	protected int timeToLive = 50;
 	
 	protected double wayPointX;
 	protected double wayPointY;
-	// The velocity of the drones, 0.1 meters per time step
+	protected int waypointPosition;
+	
+	/* The velocity of the drones, 0.1 meters per time step. */
 	protected double velocity = 0.1; 
 	
 	public String toString() {
@@ -69,7 +72,6 @@ public class Drone implements Steppable{
 			return ACKTimestamp;
 		}
 		else{
-			//return (System.nanoTime() - ACKTimestamp);
 			return (currentTime - ACKTimestamp);
 		}
 	}
@@ -135,7 +137,7 @@ public class Drone implements Steppable{
 		
 		me = drones.getObjectLocation(this);
 		
-		if((int)me.x!=(int)wayPointX && (int)me.y!=(int)wayPointY){
+		if((precision(me.x)!=precision(wayPointX)) || (precision(me.y)!=precision(wayPointY))){
 			double Mx = me.x;
 			double My = me.y;
 			double Wx = wayPointX;
@@ -149,20 +151,29 @@ public class Drone implements Steppable{
 			double Sy = velocity * sinT;
 			double Sx = velocity * cosT;
 			
-			double newX = demo.drones.stx(Mx - Sx);
-			double newY = demo.drones.stx(My - Sy);
+			double newX = Mx - Sx;
+			double newY = My - Sy;
 			
 			demo.drones.setObjectLocation(this, new Double2D(newX,newY));
 		}
 		else{
-			wayPointX =drones.getWidth() * demo.random.nextDouble();
-			wayPointY =drones.getHeight() * demo.random.nextDouble();
+			ArrayList<Integer> waypointAccess = new ArrayList<Integer>();
+			for(int i=0; i<Demo.connectionMatrix.get(waypointPosition).size(); i++){
+				if(Demo.connectionMatrix.get(waypointPosition).get(i).equals(1)){
+					waypointAccess.add(i);
+				}
+			}
+			int newWaypoint = demo.random.nextInt(waypointAccess.size());
+			
+			wayPointX = Demo.waypointCoordinate.get(waypointAccess.get(newWaypoint)).get(0);
+			wayPointY = Demo.waypointCoordinate.get(waypointAccess.get(newWaypoint)).get(1);
+			waypointPosition = waypointAccess.get(newWaypoint);
 		}
-		
+			
 		timeToLive(demo);
-		
+			
 		vaccination(demo);
-		
+			
 		timer(demo);
 	}
 	
@@ -220,13 +231,13 @@ public class Drone implements Steppable{
 		if(Demo.isTimeToLiveStart){
 //			TTL(demo);
 			droneItselfDataPosition();
-			ownDataDuration(demo);
-			ownDataDurationCheckerAndRemoval();
+			itselfDataDuration(demo);
+			itselfDataDurationCheckerAndRemoval();
 		}
 		
 	}
 	
-	public void ownDataDuration(Demo demo){
+	public void itselfDataDuration(Demo demo){
 		if(!dataObject.isEmpty()){
 			int j=0;
 			for(int i=0; i<itselfDataPosition.length; i++){
@@ -237,7 +248,7 @@ public class Drone implements Steppable{
 		}
 	}
 	
-	public void ownDataDurationCheckerAndRemoval(){
+	public void itselfDataDurationCheckerAndRemoval(){
 		if(!dataObject.isEmpty()){
 			for(int i=0; i<ownDataDuration.length; i=i+2){
 				if(ownDataDuration[i]==timeToLive){
@@ -258,6 +269,14 @@ public class Drone implements Steppable{
 		}
 	}
 	
+	public double precision(double number){
+		DecimalFormat df = new DecimalFormat("#.0");
+		String string = df.format(number);
+		double result = Double.parseDouble(string);
+		return result;
+	}
+	
+	/* This method just consider that the drone just has only one data. */
 //	public void TTL(Demo demo){
 //	if(!droneItselfDataSentChecker()){
 //		for(int i=0; i<dataObject.size(); i++){

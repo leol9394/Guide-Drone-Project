@@ -16,6 +16,7 @@ public class DemoWithUI extends GUIState{
 	public JFrame displayFrame;
 	ContinuousPortrayal2D dronePortrayal = new ContinuousPortrayal2D();
 	ContinuousPortrayal2D captainPortrayal = new ContinuousPortrayal2D();
+	ContinuousPortrayal2D waypointPortrayal = new ContinuousPortrayal2D();
 
 	public static void main(String[] args) {
 		DemoWithUI vid = new DemoWithUI();
@@ -76,8 +77,14 @@ public class DemoWithUI extends GUIState{
 						new CircledPortrayal2D(
 								new LabelledPortrayal2D(
 										new RectanglePortrayal2D(5.0),
-										5.0, null, Color.black, false),
-										0, 20.0, Color.blue, false)));
+										10.0, null, Color.black, false),
+										0, 20.0, Color.green, false)));
+		
+		waypointPortrayal.setField(demo.waypoints);
+		waypointPortrayal.setPortrayalForAll(
+				new LabelledPortrayal2D(
+						new OvalPortrayal2D(Color.red),
+						1.0, null, Color.black, false));
 		
 		display.reset();
 		
@@ -97,6 +104,7 @@ public class DemoWithUI extends GUIState{
 		displayFrame.setVisible(true);
 		display.attach(dronePortrayal, "Drones");
 		display.attach(captainPortrayal, "Captains");
+		display.attach(waypointPortrayal, "Waypoints");
 	}
 	
 	public void quit(){

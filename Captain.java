@@ -18,7 +18,7 @@ public class Captain implements Steppable{
 	protected ArrayList<Integer> nearbyDrones;
 	protected ArrayList<HashCode> hashCode = new ArrayList<HashCode>();
 	
-	//The attributes for computing the time that the Captain has received all the data.
+	/* The attributes for computing the time that the Captain has received all the data. */
 	protected double startTime;
 	protected double duration;
 	protected double endTime;

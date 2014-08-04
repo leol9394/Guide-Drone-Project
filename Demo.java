@@ -15,29 +15,36 @@ public class Demo extends SimState{
 	
 	protected Continuous2D drones = new Continuous2D(1.0, 100, 100);
 	protected Continuous2D captains = new Continuous2D(1.0, 100, 100);
+	protected Continuous2D waypoints = new Continuous2D(1.0, 100, 100);
+	
 	protected static int numCaptains = 1;
 	protected static int numDrones = 5;
 	protected static int numData = 1;
 	
 	protected double initialDroneX;
 	protected double initialDroneY;
+	protected int initialWaypoint;
 	protected double initialCaptainX = 20.0;
 	protected double initialCaptainY = 50.0;
-	protected double initialDroneAngleDegree = 80.0;
-	protected double initialDroneAngleRadian;
-	protected double captainsDronesRadius = 45.0;
-	protected double dronePositionGapDegree = 40.0;
 	
 	private static String[][] encounteringDrones;
 	private static String[][] captainConnectedDrones;
 	
+	/* The fixed time step that output the state. */
 	private int recordTimeStep = 1000;
-//	private String allDataReceived = "/Users/Leo/Documents/MASON/mason/sim/app/drones/EpidemicAllDataReceived.txt";
-//	private String stopAtFixedTimeStep = "/Users/Leo/Documents/MASON/mason/sim/app/drones/EpidemicStopAtFixedTimeStep.txt";
-//	private String allDataReceived = "/Users/Leo/Documents/MASON/mason/sim/app/drones/SAndRAllDataReceived.txt";
-//	private String stopAtFixedTimeStep = "/Users/Leo/Documents/MASON/mason/sim/app/drones/SAndRStopAtFixedTimeStep.txt";
-	private String allDataReceived = "/Users/Leo/Documents/MASON/mason/sim/app/drones/TTLAllDataReceived.txt";
-	private String stopAtFixedTimeStep = "/Users/Leo/Documents/MASON/mason/sim/app/drones/TTLStopAtFixedTimeStep.txt";
+	
+	private static String waypointFile = "/Users/Leo/Documents/MASON/mason/sim/app/drones/Waypoint.txt";
+	private static String connectionMatrixFile = "/Users/Leo/Documents/MASON/mason/sim/app/drones/connectionMatrix.txt";
+//	private static String allDataReceived = "/Users/Leo/Documents/MASON/mason/sim/app/drones/EpidemicAllDataReceived.txt";
+//	private static String stopAtFixedTimeStep = "/Users/Leo/Documents/MASON/mason/sim/app/drones/EpidemicStopAtFixedTimeStep.txt";
+//	private static String allDataReceived = "/Users/Leo/Documents/MASON/mason/sim/app/drones/SAndRAllDataReceived.txt";
+//	private static String stopAtFixedTimeStep = "/Users/Leo/Documents/MASON/mason/sim/app/drones/SAndRStopAtFixedTimeStep.txt";
+	private static String allDataReceived = "/Users/Leo/Documents/MASON/mason/sim/app/drones/TTLAllDataReceived.txt";
+	private static String stopAtFixedTimeStep = "/Users/Leo/Documents/MASON/mason/sim/app/drones/TTLStopAtFixedTimeStep.txt";
+	
+	protected static ArrayList<ArrayList<Double>> waypointCoordinate = DataConverter.stringToDouble(FileInputOutput.readFile(waypointFile));
+	protected static ArrayList<ArrayList<Integer>> connectionMatrix = DataConverter.stringToInteger(FileInputOutput.readFile(connectionMatrixFile));
+	
 	private boolean[] allDataReceivedOutputState = new boolean[numDrones+numCaptains];
 	private String[] allDataReceivedOutput = new String[numDrones+numCaptains];
 	private String[] stopAtFixedTimeStepOutput = new String[numDrones+numCaptains];
@@ -50,7 +57,7 @@ public class Demo extends SimState{
 	}
 	
 	public String[][] getDronesCommunication(){
-		//Start TTL or not.
+		/* Start TTL or not. */
 		//timeToLive();
 		
 		Bag getDrones = drones.allObjects;
@@ -73,6 +80,7 @@ public class Demo extends SimState{
 						
 						((Drone)(getDrones.objs[i])).nearbyDrones.add(j);
 						
+						/* Pure Epidemic Protocol or Spray and Wait Protocol */
 						epidemic(((Drone)(getDrones.objs[i])),((Drone)(getDrones.objs[j])));
 						//sprayAndWait(((Drone)(getDrones.objs[i])),((Drone)(getDrones.objs[j])), i, j);
 						
@@ -108,7 +116,7 @@ public class Demo extends SimState{
 					
 					((Captain)(getCaptains.objs[i])).nearbyDrones.add(j);
 					
-					captainsDronesCommunication(((Captain)(getCaptains.objs[i])), ((Drone)(getDrones.objs[j])));
+					captainsDronesDataACKsCommunication(((Captain)(getCaptains.objs[i])), ((Drone)(getDrones.objs[j])));
 					
 				}
 				else{
@@ -163,23 +171,23 @@ public class Demo extends SimState{
 		
 		if(!allDataOutput){
 			if(outputStateChecker(allDataReceivedOutputState)){
-				FileOutput.insertFile(allDataReceived, allDataReceivedOutput);
+				FileInputOutput.insertFile(allDataReceived, allDataReceivedOutput);
 				allDataOutput = true;
 			}
 		}
 		
 		if(schedule.getTime()==recordTimeStep){
-			FileOutput.insertFile(stopAtFixedTimeStep, stopAtFixedTimeStepOutput);
+			FileInputOutput.insertFile(stopAtFixedTimeStep, stopAtFixedTimeStepOutput);
 			fixedTimeDataOutput = true;
 		}
 		
 		if(allDataOutput && fixedTimeDataOutput){
-//			if(FileOutput.readFile(allDataReceived)==260){
+//			if(FileInputOutput.lineCount(allDataReceived)==260){
 //				System.exit(0);
 //			}
 //			else{
 //				String[] args = {};
-//				DataRecord.main(args);
+//				MouseMovement.main(args);
 //			}
 		}
 		
@@ -260,7 +268,7 @@ public class Demo extends SimState{
 		isTimeToLiveStart = true;
 	}
 
-	public void captainsDronesCommunication(Captain captain, Drone drone){
+	public void captainsDronesDataACKsCommunication(Captain captain, Drone drone){
 		for(int i=0; i<drone.dataObject.size(); i++){
 			if(!captain.hashCode.contains(drone.dataObject.get(i).getHashCode())){
 
@@ -323,7 +331,7 @@ public class Demo extends SimState{
 			}
 		}
 		else{
-			// Do nothing.
+			/* Do nothing. */
 		}
 	}
 
@@ -334,17 +342,33 @@ public class Demo extends SimState{
 		
 		captains.clear();
 		
-		initialDroneAngleRadian = Math.toRadians(initialDroneAngleDegree);
-		initialDroneX = initialCaptainX + captainsDronesRadius * Math.cos(initialDroneAngleRadian);
-		initialDroneY = initialCaptainY - captainsDronesRadius * Math.sin(initialDroneAngleRadian);
+		/* Set up the way points. */
+		for(int i=0; i<waypointCoordinate.size(); i++){
+			Waypoint waypoint = new Waypoint();
+			waypoints.setObjectLocation(waypoint, new Double2D(waypointCoordinate.get(i).get(0), waypointCoordinate.get(i).get(1)));
+			waypoint.waypointNumber = i+1;
+		}
 		
+		/* Set up the drones. */
 		for(int i=0; i<numDrones; i++){
 			Drone drone = new Drone();
-			drone.droneNumber=i;
-			drone.wayPointX = drones.getWidth() * random.nextDouble();
-			drone.wayPointY = drones.getHeight() * random.nextDouble();
+			drone.droneNumber = i;
+			
+			/* Set up the drone's position. */
+			initialWaypoint = i;
+			ArrayList<Integer> waypointAccess = new ArrayList<Integer>();
+				for(int j=0; j<connectionMatrix.get(initialWaypoint).size(); j++){
+					if(Demo.connectionMatrix.get(initialWaypoint).get(j).equals(1)){
+						waypointAccess.add(j);
+				}
+			}
+			int newWaypoint = random.nextInt(waypointAccess.size());
+			drone.wayPointX = waypointCoordinate.get(waypointAccess.get(newWaypoint)).get(0);
+			drone.wayPointY = waypointCoordinate.get(waypointAccess.get(newWaypoint)).get(1);
+			drone.waypointPosition = waypointAccess.get(newWaypoint);
 
-			for(int j=0; j<numData; j++){
+			/* Set up the data in each drone. */
+			for(int k=0; k<numData; k++){
 				DataObject data = new DataObject();
 				data.setSource(drone.droneNumber);
 				data.setData((int)i*10);
@@ -356,18 +380,14 @@ public class Demo extends SimState{
 				drone.dataObject.add(data);
 			}
 			
-			drones.setObjectLocation(drone, new Double2D(initialDroneX, initialDroneY));
-			
-			initialDroneAngleDegree = initialDroneAngleDegree - dronePositionGapDegree;
-			initialDroneAngleRadian = Math.toRadians(initialDroneAngleDegree);
-			initialDroneX = initialCaptainX + captainsDronesRadius * Math.cos(initialDroneAngleRadian);
-			initialDroneY = initialCaptainY - captainsDronesRadius * Math.sin(initialDroneAngleRadian);
+			drones.setObjectLocation(drone, new Double2D(waypointCoordinate.get(initialWaypoint).get(0), waypointCoordinate.get(initialWaypoint).get(1)));
 			
 			drone.startTime = schedule.getTime();
 			
 			schedule.scheduleRepeating(drone);
 		}
 		
+		/* Set up the Captains. */
 		for(int j=0; j<numCaptains; j++){
 			Captain captain = new Captain();
 			captains.setObjectLocation(captain, new Double2D(initialCaptainX, initialCaptainY));
@@ -379,6 +399,7 @@ public class Demo extends SimState{
 			
 		    schedule.scheduleRepeating(captain);
 		}
+		
 	}
 	
 	public static void main(String[] args){
