@@ -12,6 +12,8 @@ public class DataCount {
 	private static String TTLStopAtFixedTimeStep = "/Users/Leo/Documents/MASON/mason/sim/app/drones/TTLStopAtFixedTimeStep.txt";
 	private static String waypointCoordinate = "/Users/Leo/Documents/MASON/mason/sim/app/drones/Waypoint.txt";
 	private static String connectionMatrixFile = "/Users/Leo/Documents/MASON/mason/sim/app/drones/connectionMatrix.txt";
+	private static String buildingXFile = "/Users/Leo/Documents/MASON/mason/sim/app/drones/BuildingX.txt";
+	private static String buildingYFile = "/Users/Leo/Documents/MASON/mason/sim/app/drones/BuildingY.txt";
 
 	public static void main(String[] args) {
 		System.out.println(FileInputOutput.lineCount(EpidemicallDataReceived));
@@ -22,21 +24,37 @@ public class DataCount {
 		System.out.println(FileInputOutput.lineCount(TTLStopAtFixedTimeStep));
 		
 		/* Display the way point coordinate. */
-		ArrayList<ArrayList<Double>> arrayDouble = new ArrayList<ArrayList<Double>>();
-		arrayDouble = DataConverter.stringToDouble(FileInputOutput.readFile(waypointCoordinate));
-		for(int i=0; i<arrayDouble.size(); i++){
-			System.out.println(arrayDouble.get(i).get(0)+" "+arrayDouble.get(i).get(1));
+		ArrayList<ArrayList<Double>> arrayListDouble = new ArrayList<ArrayList<Double>>();
+		arrayListDouble = DataConverter.stringToDouble(FileInputOutput.readFile(waypointCoordinate));
+		for(int i=0; i<arrayListDouble.size(); i++){
+			System.out.println(arrayListDouble.get(i).get(0)+" "+arrayListDouble.get(i).get(1));
 		}
 		
 		/* Display the connection matrix. */
-		ArrayList<ArrayList<Integer>> arrayInteger = new ArrayList<ArrayList<Integer>>();
-		arrayInteger = DataConverter.stringToInteger(FileInputOutput.readFile(connectionMatrixFile));
-		for(int i=0; i<arrayInteger.size(); i++){
+		ArrayList<ArrayList<Integer>> arrayListInteger = new ArrayList<ArrayList<Integer>>();
+		arrayListInteger = DataConverter.stringToInteger(FileInputOutput.readFile(connectionMatrixFile));
+		for(int i=0; i<arrayListInteger.size(); i++){
 			String result = "";
-			for(int j=0; j<arrayInteger.get(i).size(); j++){
-				result += arrayInteger.get(i).get(j)+" ";
+			for(int j=0; j<arrayListInteger.get(i).size(); j++){
+				result += arrayListInteger.get(i).get(j)+" ";
 			}
 			System.out.println(result);
+		}
+		
+		/* Display the buildings' X and Y coordinate. */
+		ArrayList<double[]> arrayDoubleX = new ArrayList<double[]>();
+		ArrayList<double[]> arrayDoubleY = new ArrayList<double[]>();
+		arrayDoubleX = DataConverter.stringToDoubleArray(FileInputOutput.readFile(buildingXFile));
+		arrayDoubleY = DataConverter.stringToDoubleArray(FileInputOutput.readFile(buildingYFile));
+		for(int i=0; i<arrayDoubleX.size(); i++){
+			String X = "";
+			String Y = "";
+			for(int j=0; j<arrayDoubleX.get(i).length; j++){
+				X += arrayDoubleX.get(i)[j]+" ";
+				Y += arrayDoubleY.get(i)[j]+" ";
+			}
+			System.out.println("X: "+X);
+			System.out.println("Y: "+Y);
 		}
 		
 	}

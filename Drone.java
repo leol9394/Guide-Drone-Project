@@ -1,7 +1,6 @@
 package sim.app.drones;
 
 
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 
 import sim.app.drones.DataObject.HashCode;
@@ -76,59 +75,10 @@ public class Drone implements Steppable{
 		}
 	}
 	
-//	public ArrayList<Long> getTime(){
-//		ArrayList<Long> time = new ArrayList<Long>();
-//		for(int i=0; i<dataObject.size(); i++){
-//			time.add(dataObject.get(i).getTime());
-//		}
-//		return time;
-//	}
-
-//	public ArrayList<Integer> getDataSource(){
-//		ArrayList<Integer> dataSource = new ArrayList<Integer>();
-//		for(int i=0; i<dataObject.size(); i++){
-//			dataSource.add(dataObject.get(i).getSource());
-//		}
-//		return dataSource;
-//	}
-	
-//	public ArrayList<Integer> getDataContent(){
-//		ArrayList<Integer> dataContent = new ArrayList<Integer>();
-//		for(int i=0; i<dataObject.size(); i++){
-//			dataContent.add(dataObject.get(i).getData());
-//		}
-//		return dataContent;
-//	}
-	
-//	public ArrayList<Integer> getACK(){
-//		ArrayList<Integer> dataACK = new ArrayList<Integer>();
-//		for(int i=0; i<ACK.size(); i++){
-//			dataACK.add(ACK.get(i).getHashCode());
-//		}
-//		return dataACK;
-//	}
-	
-//	public double getScale(){
-//		return scale;
-//	}
-	
-//	public double getWayPointX(){
-//		return wayPointX;
-//  }
-//
-//  public double getWayPointY(){
-//		return wayPointY;
-//  }
-	
-//	public int getDroneNumber(){
-//		return droneNumber;
-//	}
-	
 	public void step(SimState state){
 		scale = 5.0;
 
 		move(state);
-		
 	}
 	
 	public void move(SimState state){
@@ -137,7 +87,20 @@ public class Drone implements Steppable{
 		
 		me = drones.getObjectLocation(this);
 		
-		if((precision(me.x)!=precision(wayPointX)) || (precision(me.y)!=precision(wayPointY))){
+		if((precision(me.x)==precision(wayPointX)) && (precision(me.y)==precision(wayPointY))){
+			ArrayList<Integer> waypointAccess = new ArrayList<Integer>();
+			for(int i=0; i<Demo.connectionMatrix.get(waypointPosition).size(); i++){
+				if(Demo.connectionMatrix.get(waypointPosition).get(i).equals(1)){
+					waypointAccess.add(i);
+				}
+			}
+			int newWaypoint = demo.random.nextInt(waypointAccess.size());
+			
+			wayPointX = Demo.waypointCoordinate.get(waypointAccess.get(newWaypoint)).get(0);
+			wayPointY = Demo.waypointCoordinate.get(waypointAccess.get(newWaypoint)).get(1);
+			waypointPosition = waypointAccess.get(newWaypoint);			
+		}
+		else{
 			double Mx = me.x;
 			double My = me.y;
 			double Wx = wayPointX;
@@ -155,19 +118,6 @@ public class Drone implements Steppable{
 			double newY = My - Sy;
 			
 			demo.drones.setObjectLocation(this, new Double2D(newX,newY));
-		}
-		else{
-			ArrayList<Integer> waypointAccess = new ArrayList<Integer>();
-			for(int i=0; i<Demo.connectionMatrix.get(waypointPosition).size(); i++){
-				if(Demo.connectionMatrix.get(waypointPosition).get(i).equals(1)){
-					waypointAccess.add(i);
-				}
-			}
-			int newWaypoint = demo.random.nextInt(waypointAccess.size());
-			
-			wayPointX = Demo.waypointCoordinate.get(waypointAccess.get(newWaypoint)).get(0);
-			wayPointY = Demo.waypointCoordinate.get(waypointAccess.get(newWaypoint)).get(1);
-			waypointPosition = waypointAccess.get(newWaypoint);
 		}
 			
 		timeToLive(demo);
@@ -233,18 +183,17 @@ public class Drone implements Steppable{
 			droneItselfDataPosition();
 			itselfDataDuration(demo);
 			itselfDataDurationCheckerAndRemoval();
-		}
-		
+		}	
 	}
 	
 	public void itselfDataDuration(Demo demo){
 		if(!dataObject.isEmpty()){
 			int j=0;
 			for(int i=0; i<itselfDataPosition.length; i++){
-					ownDataDuration[j] = ((int)(demo.schedule.getTime() - dataObject.get(itselfDataPosition[i]).getTimeStep()));
-					ownDataDuration[j+1] = itselfDataPosition[i];
-					j = j+2;
-				}
+				ownDataDuration[j] = ((int)(demo.schedule.getTime() - dataObject.get(itselfDataPosition[i]).getTimeStep()));
+				ownDataDuration[j+1] = itselfDataPosition[i];
+				j = j+2;
+			}
 		}
 	}
 	
@@ -256,7 +205,6 @@ public class Drone implements Steppable{
 				}
 			}
 		}
-
 	}
 	
 	public void droneItselfDataPosition(){
@@ -270,9 +218,12 @@ public class Drone implements Steppable{
 	}
 	
 	public double precision(double number){
-		DecimalFormat df = new DecimalFormat("#.0");
-		String string = df.format(number);
-		double result = Double.parseDouble(string);
+		/* Results with one decimal place without rounding off. */
+		double result = Math.floor(number * 10) / 10;
+		/* Results rounded with one decimal place. */
+//		DecimalFormat df = new DecimalFormat("#.0");
+//		String string = df.format(number);
+//		double result = Double.parseDouble(string);
 		return result;
 	}
 	
@@ -287,6 +238,54 @@ public class Drone implements Steppable{
 //			}
 //		}
 //	}
+//}
+	
+//	public ArrayList<Long> getTime(){
+//	ArrayList<Long> time = new ArrayList<Long>();
+//	for(int i=0; i<dataObject.size(); i++){
+//		time.add(dataObject.get(i).getTime());
+//	}
+//	return time;
+//}
+
+//public ArrayList<Integer> getDataSource(){
+//	ArrayList<Integer> dataSource = new ArrayList<Integer>();
+//	for(int i=0; i<dataObject.size(); i++){
+//		dataSource.add(dataObject.get(i).getSource());
+//	}
+//	return dataSource;
+//}
+
+//public ArrayList<Integer> getDataContent(){
+//	ArrayList<Integer> dataContent = new ArrayList<Integer>();
+//	for(int i=0; i<dataObject.size(); i++){
+//		dataContent.add(dataObject.get(i).getData());
+//	}
+//	return dataContent;
+//}
+
+//public ArrayList<Integer> getACK(){
+//	ArrayList<Integer> dataACK = new ArrayList<Integer>();
+//	for(int i=0; i<ACK.size(); i++){
+//		dataACK.add(ACK.get(i).getHashCode());
+//	}
+//	return dataACK;
+//}
+
+//public double getScale(){
+//	return scale;
+//}
+
+//public double getWayPointX(){
+//	return wayPointX;
+//}
+//
+//public double getWayPointY(){
+//	return wayPointY;
+//}
+
+//public int getDroneNumber(){
+//	return droneNumber;
 //}
 	
 }

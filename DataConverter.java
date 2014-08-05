@@ -27,4 +27,16 @@ public class DataConverter {
 		}
 		return result;
 	}
+	
+	public static ArrayList<double[]> stringToDoubleArray(ArrayList<ArrayList<String>> string){
+		ArrayList<double[]> result = new ArrayList<double[]>();
+		for(int i=0; i<string.size(); i++){
+			double[] arrayDouble = new double[string.get(i).size()];
+			for(int j=0; j<string.get(i).size(); j++){
+				arrayDouble[j] = Double.parseDouble(string.get(i).get(j));
+			}
+			result.add(arrayDouble);
+		}
+		return result;
+	}
 }

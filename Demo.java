@@ -16,10 +16,7 @@ public class Demo extends SimState{
 	protected Continuous2D drones = new Continuous2D(1.0, 100, 100);
 	protected Continuous2D captains = new Continuous2D(1.0, 100, 100);
 	protected Continuous2D waypoints = new Continuous2D(1.0, 100, 100);
-	
-	protected static int numCaptains = 1;
-	protected static int numDrones = 5;
-	protected static int numData = 1;
+	protected Continuous2D buildings = new Continuous2D(1.0, 100, 100);
 	
 	protected double initialDroneX;
 	protected double initialDroneY;
@@ -34,7 +31,9 @@ public class Demo extends SimState{
 	private int recordTimeStep = 1000;
 	
 	private static String waypointFile = "/Users/Leo/Documents/MASON/mason/sim/app/drones/Waypoint.txt";
-	private static String connectionMatrixFile = "/Users/Leo/Documents/MASON/mason/sim/app/drones/connectionMatrix.txt";
+	private static String connectionMatrixFile = "/Users/Leo/Documents/MASON/mason/sim/app/drones/ConnectionMatrix.txt";
+	private static String buildingXFile = "/Users/Leo/Documents/MASON/mason/sim/app/drones/BuildingX.txt";
+	private static String buildingYFile = "/Users/Leo/Documents/MASON/mason/sim/app/drones/BuildingY.txt";
 //	private static String allDataReceived = "/Users/Leo/Documents/MASON/mason/sim/app/drones/EpidemicAllDataReceived.txt";
 //	private static String stopAtFixedTimeStep = "/Users/Leo/Documents/MASON/mason/sim/app/drones/EpidemicStopAtFixedTimeStep.txt";
 //	private static String allDataReceived = "/Users/Leo/Documents/MASON/mason/sim/app/drones/SAndRAllDataReceived.txt";
@@ -44,6 +43,13 @@ public class Demo extends SimState{
 	
 	protected static ArrayList<ArrayList<Double>> waypointCoordinate = DataConverter.stringToDouble(FileInputOutput.readFile(waypointFile));
 	protected static ArrayList<ArrayList<Integer>> connectionMatrix = DataConverter.stringToInteger(FileInputOutput.readFile(connectionMatrixFile));
+	protected static ArrayList<double[]> buildingX = DataConverter.stringToDoubleArray(FileInputOutput.readFile(buildingXFile));
+	protected static ArrayList<double[]> buildingY = DataConverter.stringToDoubleArray(FileInputOutput.readFile(buildingYFile));
+	
+	protected static int numCaptains = 1;
+	protected static int numDrones = 5;
+	protected static int numData = 1;
+	protected static int numBuildings = buildingX.size();
 	
 	private boolean[] allDataReceivedOutputState = new boolean[numDrones+numCaptains];
 	private String[] allDataReceivedOutput = new String[numDrones+numCaptains];
@@ -346,7 +352,7 @@ public class Demo extends SimState{
 		for(int i=0; i<waypointCoordinate.size(); i++){
 			Waypoint waypoint = new Waypoint();
 			waypoints.setObjectLocation(waypoint, new Double2D(waypointCoordinate.get(i).get(0), waypointCoordinate.get(i).get(1)));
-			waypoint.waypointNumber = i+1;
+			waypoint.waypointNumber = i;
 		}
 		
 		/* Set up the drones. */
@@ -388,7 +394,7 @@ public class Demo extends SimState{
 		}
 		
 		/* Set up the Captains. */
-		for(int j=0; j<numCaptains; j++){
+		for(int i=0; i<numCaptains; i++){
 			Captain captain = new Captain();
 			captains.setObjectLocation(captain, new Double2D(initialCaptainX, initialCaptainY));
 			
@@ -400,6 +406,11 @@ public class Demo extends SimState{
 		    schedule.scheduleRepeating(captain);
 		}
 		
+		/* Set up the buildings. */
+		for(int i=0; i<numBuildings; i++){
+			Building building =new Building(buildingX.get(i), buildingY.get(i));
+			buildings.setObjectLocation(building, new Double2D(0,0));
+		}
 	}
 	
 	public static void main(String[] args){
