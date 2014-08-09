@@ -14,6 +14,7 @@ public class DataCount {
 	private static String connectionMatrixFile = "/Users/Leo/Documents/MASON/mason/sim/app/drones/connectionMatrix.txt";
 	private static String buildingXFile = "/Users/Leo/Documents/MASON/mason/sim/app/drones/BuildingX.txt";
 	private static String buildingYFile = "/Users/Leo/Documents/MASON/mason/sim/app/drones/BuildingY.txt";
+	private static String mapSizeFile = "/Users/Leo/Documents/MASON/mason/sim/app/drones/MapSize.txt";
 
 	public static void main(String[] args) {
 		System.out.println(FileInputOutput.lineCount(EpidemicallDataReceived));
@@ -56,6 +57,13 @@ public class DataCount {
 			System.out.println("X: "+X);
 			System.out.println("Y: "+Y);
 		}
+		
+		ArrayList<ArrayList<Double>> matlabData = new ArrayList<ArrayList<Double>>();
+		matlabData = DataConverter.stringToDouble(FileInputOutput.readFile(mapSizeFile));
+		double width = Math.abs(matlabData.get(0).get(0) - matlabData.get(1).get(0));
+		double height = Math.abs(matlabData.get(0).get(1) - matlabData.get(2).get(1));
+		System.out.println(width+" "+height);
+		
 		
 	}
 

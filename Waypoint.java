@@ -5,7 +5,7 @@ public class Waypoint{
 	protected int waypointNumber;
 	
 	public String toString(){
-		return ""+waypointNumber;
+		return " ";
 	}
 	
 }

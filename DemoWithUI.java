@@ -84,7 +84,7 @@ public class DemoWithUI extends GUIState{
 		waypointPortrayal.setField(demo.waypoints);
 		waypointPortrayal.setPortrayalForAll(
 				new LabelledPortrayal2D(
-						new OvalPortrayal2D(Color.red),
+						new OvalPortrayal2D(Color.red, 5.0),
 						1.0, null, Color.black, false));
 		
 		buildingPortrayal.setField(demo.buildings);
@@ -96,7 +96,7 @@ public class DemoWithUI extends GUIState{
 	
 	public void init(Controller c){
 		super.init(c);
-		display = new Display2D(500,500,this);
+		display = new Display2D(500,600,this);
 		display.setClipping(true);
 		
 		display.setBackdrop(Color.white);

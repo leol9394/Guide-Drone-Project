@@ -1,5 +1,6 @@
 package sim.app.drones;
 
+import java.awt.Color;
 import java.util.ArrayList;
 
 import sim.portrayal.simple.ShapePortrayal2D;
@@ -13,8 +14,8 @@ public class Building extends ShapePortrayal2D{
 	protected double[] buildingY = new double[Y.size()];
 	
 	public Building(double[] xpoints, double[] ypoints) {
-			super(xpoints, ypoints);
-			this.buildingX = xpoints;
-			this.buildingY = ypoints;
-		}
+		super(xpoints, ypoints, Color.gray,1.0);
+		this.buildingX = xpoints;
+		this.buildingY = ypoints;
+	}
 }

@@ -13,33 +13,39 @@ public class Demo extends SimState{
 	
 	private static final long serialVersionUID = 1;
 	
-	protected Continuous2D drones = new Continuous2D(1.0, 100, 100);
-	protected Continuous2D captains = new Continuous2D(1.0, 100, 100);
-	protected Continuous2D waypoints = new Continuous2D(1.0, 100, 100);
-	protected Continuous2D buildings = new Continuous2D(1.0, 100, 100);
-	
-	protected double initialDroneX;
-	protected double initialDroneY;
-	protected int initialWaypoint;
-	protected double initialCaptainX = 20.0;
-	protected double initialCaptainY = 50.0;
-	
-	private static String[][] encounteringDrones;
-	private static String[][] captainConnectedDrones;
-	
-	/* The fixed time step that output the state. */
-	private int recordTimeStep = 1000;
-	
+	/* The paths of all files. */
 	private static String waypointFile = "/Users/Leo/Documents/MASON/mason/sim/app/drones/Waypoint.txt";
 	private static String connectionMatrixFile = "/Users/Leo/Documents/MASON/mason/sim/app/drones/ConnectionMatrix.txt";
 	private static String buildingXFile = "/Users/Leo/Documents/MASON/mason/sim/app/drones/BuildingX.txt";
 	private static String buildingYFile = "/Users/Leo/Documents/MASON/mason/sim/app/drones/BuildingY.txt";
+	private static String mapSizeFile = "/Users/Leo/Documents/MASON/mason/sim/app/drones/MapSize.txt";
 //	private static String allDataReceived = "/Users/Leo/Documents/MASON/mason/sim/app/drones/EpidemicAllDataReceived.txt";
 //	private static String stopAtFixedTimeStep = "/Users/Leo/Documents/MASON/mason/sim/app/drones/EpidemicStopAtFixedTimeStep.txt";
 //	private static String allDataReceived = "/Users/Leo/Documents/MASON/mason/sim/app/drones/SAndRAllDataReceived.txt";
 //	private static String stopAtFixedTimeStep = "/Users/Leo/Documents/MASON/mason/sim/app/drones/SAndRStopAtFixedTimeStep.txt";
 	private static String allDataReceived = "/Users/Leo/Documents/MASON/mason/sim/app/drones/TTLAllDataReceived.txt";
 	private static String stopAtFixedTimeStep = "/Users/Leo/Documents/MASON/mason/sim/app/drones/TTLStopAtFixedTimeStep.txt";
+	
+	/* The attributes of the simulator map. */
+	private static ArrayList<ArrayList<Double>> mapSize = DataConverter.stringToDouble(FileInputOutput.readFile(mapSizeFile));
+	protected int mapWidth = (int)Math.abs(mapSize.get(0).get(0) - mapSize.get(1).get(0));
+	protected int mapHeight = (int)Math.abs(mapSize.get(0).get(1) - mapSize.get(2).get(1));
+	protected double originX = mapSize.get(0).get(0);
+	protected double originY = mapSize.get(0).get(1);
+	protected Continuous2D drones = new Continuous2D(1.0, mapWidth, mapHeight);
+	protected Continuous2D captains = new Continuous2D(1.0, mapWidth, mapHeight);
+	protected Continuous2D waypoints = new Continuous2D(1.0, mapWidth, mapHeight);
+	protected Continuous2D buildings = new Continuous2D(1.0, mapWidth, mapHeight);
+	
+	/* The initial location of the drones, captains and waypoints. */
+	protected double initialDroneX;
+	protected double initialDroneY;
+	protected int initialWaypoint;
+	protected double initialCaptainX = mapWidth * 0.2;
+	protected double initialCaptainY = mapHeight * 0.5;
+	
+	/* The fixed time step that output the state. */
+	private int recordTimeStep = 1000;
 	
 	protected static ArrayList<ArrayList<Double>> waypointCoordinate = DataConverter.stringToDouble(FileInputOutput.readFile(waypointFile));
 	protected static ArrayList<ArrayList<Integer>> connectionMatrix = DataConverter.stringToInteger(FileInputOutput.readFile(connectionMatrixFile));
@@ -51,6 +57,8 @@ public class Demo extends SimState{
 	protected static int numData = 1;
 	protected static int numBuildings = buildingX.size();
 	
+	private static String[][] encounteringDrones;
+	private static String[][] captainConnectedDrones;
 	private boolean[] allDataReceivedOutputState = new boolean[numDrones+numCaptains];
 	private String[] allDataReceivedOutput = new String[numDrones+numCaptains];
 	private String[] stopAtFixedTimeStepOutput = new String[numDrones+numCaptains];
@@ -408,7 +416,13 @@ public class Demo extends SimState{
 		
 		/* Set up the buildings. */
 		for(int i=0; i<numBuildings; i++){
-			Building building =new Building(buildingX.get(i), buildingY.get(i));
+			double[] x = new double[buildingX.get(i).length];
+			double[] y = new double[buildingY.get(i).length];
+			for(int j=0; j<buildingX.get(i).length; j++){
+				x[j] = buildingX.get(i)[j] - originX;
+				y[j] = Math.abs(buildingY.get(i)[j] - originY);
+			}
+			Building building =new Building(x, y);
 			buildings.setObjectLocation(building, new Double2D(0,0));
 		}
 	}
