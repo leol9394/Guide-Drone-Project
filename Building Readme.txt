@@ -14,5 +14,7 @@
 14. Library
 15. MPEB
 16. Department of German
-17. Christ the King Gordon Square
-18. Gordon Square Garden
+17. Christ the King
+18. Drayton House
+19. Department of Chemistry
+20. Gordon Square Garden

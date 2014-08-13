@@ -14,39 +14,34 @@ public class Demo extends SimState{
 	private static final long serialVersionUID = 1;
 	
 	/* The paths of all files. */
-	private static String waypointFile = "/Users/Leo/Documents/MASON/mason/sim/app/drones/Waypoint.txt";
-	private static String connectionMatrixFile = "/Users/Leo/Documents/MASON/mason/sim/app/drones/ConnectionMatrix.txt";
-	private static String buildingXFile = "/Users/Leo/Documents/MASON/mason/sim/app/drones/BuildingX.txt";
-	private static String buildingYFile = "/Users/Leo/Documents/MASON/mason/sim/app/drones/BuildingY.txt";
-	private static String mapSizeFile = "/Users/Leo/Documents/MASON/mason/sim/app/drones/MapSize.txt";
-//	private static String allDataReceived = "/Users/Leo/Documents/MASON/mason/sim/app/drones/EpidemicAllDataReceived.txt";
-//	private static String stopAtFixedTimeStep = "/Users/Leo/Documents/MASON/mason/sim/app/drones/EpidemicStopAtFixedTimeStep.txt";
-//	private static String allDataReceived = "/Users/Leo/Documents/MASON/mason/sim/app/drones/SAndRAllDataReceived.txt";
-//	private static String stopAtFixedTimeStep = "/Users/Leo/Documents/MASON/mason/sim/app/drones/SAndRStopAtFixedTimeStep.txt";
-	private static String allDataReceived = "/Users/Leo/Documents/MASON/mason/sim/app/drones/TTLAllDataReceived.txt";
-	private static String stopAtFixedTimeStep = "/Users/Leo/Documents/MASON/mason/sim/app/drones/TTLStopAtFixedTimeStep.txt";
+	private static String basePath = "/Users/Leo/Documents/MASON/mason/sim/app/drones/";
+	private static String waypointFile = basePath+"Waypoint.txt";
+	private static String connectionMatrixFile = basePath+"ConnectionMatrix.txt";
+	private static String buildingXFile = basePath+"BuildingX.txt";
+	private static String buildingYFile = basePath+"BuildingY.txt";
+	private static String mapSizeFile = basePath+"MapSize.txt";
+//	private static String allDataReceived = basePath+"EpidemicAllDataReceived.txt";
+//	private static String stopAtFixedTimeStep = basePath+"EpidemicStopAtFixedTimeStep.txt";
+//	private static String allDataReceived = basePath+"SAndRAllDataReceived.txt";
+//	private static String stopAtFixedTimeStep = basePath+"SAndRStopAtFixedTimeStep.txt";
+	private static String allDataReceived = basePath+"TTLAllDataReceived.txt";
+	private static String stopAtFixedTimeStep = basePath+"TTLStopAtFixedTimeStep.txt";
 	
 	/* The attributes of the simulator map. */
 	private static ArrayList<ArrayList<Double>> mapSize = DataConverter.stringToDouble(FileInputOutput.readFile(mapSizeFile));
 	protected int mapWidth = (int)Math.abs(mapSize.get(0).get(0) - mapSize.get(1).get(0));
 	protected int mapHeight = (int)Math.abs(mapSize.get(0).get(1) - mapSize.get(2).get(1));
-	protected double originX = mapSize.get(0).get(0);
-	protected double originY = mapSize.get(0).get(1);
+	protected static double originX = mapSize.get(0).get(0);
+	protected static double originY = mapSize.get(0).get(1);
 	protected Continuous2D drones = new Continuous2D(1.0, mapWidth, mapHeight);
 	protected Continuous2D captains = new Continuous2D(1.0, mapWidth, mapHeight);
 	protected Continuous2D waypoints = new Continuous2D(1.0, mapWidth, mapHeight);
 	protected Continuous2D buildings = new Continuous2D(1.0, mapWidth, mapHeight);
 	
-	/* The initial location of the drones, captains and waypoints. */
-	protected double initialDroneX;
-	protected double initialDroneY;
-	protected int initialWaypoint;
-	protected double initialCaptainX = mapWidth * 0.2;
-	protected double initialCaptainY = mapHeight * 0.5;
-	
 	/* The fixed time step that output the state. */
 	private int recordTimeStep = 1000;
 	
+	/* The waypoint and building attributes. */
 	protected static ArrayList<ArrayList<Double>> waypointCoordinate = DataConverter.stringToDouble(FileInputOutput.readFile(waypointFile));
 	protected static ArrayList<ArrayList<Integer>> connectionMatrix = DataConverter.stringToInteger(FileInputOutput.readFile(connectionMatrixFile));
 	protected static ArrayList<double[]> buildingX = DataConverter.stringToDoubleArray(FileInputOutput.readFile(buildingXFile));
@@ -359,7 +354,9 @@ public class Demo extends SimState{
 		/* Set up the way points. */
 		for(int i=0; i<waypointCoordinate.size(); i++){
 			Waypoint waypoint = new Waypoint();
-			waypoints.setObjectLocation(waypoint, new Double2D(waypointCoordinate.get(i).get(0), waypointCoordinate.get(i).get(1)));
+			double waypointX = Math.abs(waypointCoordinate.get(i).get(0) - originX);
+			double waypointY = Math.abs(waypointCoordinate.get(i).get(1) - originY);
+			waypoints.setObjectLocation(waypoint, new Double2D(waypointX, waypointY));
 			waypoint.waypointNumber = i;
 		}
 		
@@ -369,17 +366,13 @@ public class Demo extends SimState{
 			drone.droneNumber = i;
 			
 			/* Set up the drone's position. */
-			initialWaypoint = i;
-			ArrayList<Integer> waypointAccess = new ArrayList<Integer>();
-				for(int j=0; j<connectionMatrix.get(initialWaypoint).size(); j++){
-					if(Demo.connectionMatrix.get(initialWaypoint).get(j).equals(1)){
-						waypointAccess.add(j);
-				}
-			}
-			int newWaypoint = random.nextInt(waypointAccess.size());
-			drone.wayPointX = waypointCoordinate.get(waypointAccess.get(newWaypoint)).get(0);
-			drone.wayPointY = waypointCoordinate.get(waypointAccess.get(newWaypoint)).get(1);
-			drone.waypointPosition = waypointAccess.get(newWaypoint);
+			int initialDronePosition = i+random.nextInt(10);
+			int selectRandomWaypoint = random.nextInt(connectionMatrix.get(initialDronePosition).size());
+			int waypointAllocation = connectionMatrix.get(initialDronePosition).get(selectRandomWaypoint);
+			drone.wayPointX = Math.abs(waypointCoordinate.get(waypointAllocation).get(0) - originX);
+			drone.wayPointY = Math.abs(waypointCoordinate.get(waypointAllocation).get(1) - originY);
+			drone.preWaypoint = initialDronePosition;
+			drone.newWaypoint = waypointAllocation;
 
 			/* Set up the data in each drone. */
 			for(int k=0; k<numData; k++){
@@ -394,7 +387,7 @@ public class Demo extends SimState{
 				drone.dataObject.add(data);
 			}
 			
-			drones.setObjectLocation(drone, new Double2D(waypointCoordinate.get(initialWaypoint).get(0), waypointCoordinate.get(initialWaypoint).get(1)));
+			drones.setObjectLocation(drone, new Double2D(Math.abs(waypointCoordinate.get(initialDronePosition).get(0) - originX), Math.abs(waypointCoordinate.get(initialDronePosition).get(1) - originY)));
 			
 			drone.startTime = schedule.getTime();
 			
@@ -404,10 +397,10 @@ public class Demo extends SimState{
 		/* Set up the Captains. */
 		for(int i=0; i<numCaptains; i++){
 			Captain captain = new Captain();
-			captains.setObjectLocation(captain, new Double2D(initialCaptainX, initialCaptainY));
 			
-			initialCaptainX = initialCaptainX + captains.getWidth() * 0.4;
-			initialCaptainY = initialCaptainY + captains.getHeight() * 0.2;
+			int initialCaptainPosition = 14;
+			
+			captains.setObjectLocation(captain, new Double2D(Math.abs(waypointCoordinate.get(initialCaptainPosition).get(0) - originX), Math.abs(waypointCoordinate.get(initialCaptainPosition).get(1) - originY)));
 			
 			captain.startTime = schedule.getTime();
 			
@@ -419,10 +412,18 @@ public class Demo extends SimState{
 			double[] x = new double[buildingX.get(i).length];
 			double[] y = new double[buildingY.get(i).length];
 			for(int j=0; j<buildingX.get(i).length; j++){
+				
 				x[j] = buildingX.get(i)[j] - originX;
-				y[j] = Math.abs(buildingY.get(i)[j] - originY);
+				
+				if(buildingY.get(i)[j] > originY){
+					y[j] = -(buildingY.get(i)[j] - originY);
+				}
+				else{
+					y[j] = Math.abs(buildingY.get(i)[j] - originY);
+				}
+				
 			}
-			Building building =new Building(x, y);
+			Building building =new Building(x, y, false);
 			buildings.setObjectLocation(building, new Double2D(0,0));
 		}
 	}

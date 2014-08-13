@@ -43,10 +43,11 @@ public class Drone implements Steppable{
 	
 	protected double wayPointX;
 	protected double wayPointY;
-	protected int waypointPosition;
+	protected int preWaypoint;
+	protected int newWaypoint;
 	
 	/* The velocity of the drones, 0.1 meters per time step. */
-	protected double velocity = 0.1; 
+	protected double velocity = 1.5; 
 	
 	public String toString() {
 		if(!dataObject.isEmpty()){
@@ -87,18 +88,29 @@ public class Drone implements Steppable{
 		
 		me = drones.getObjectLocation(this);
 		
-		if((precision(me.x)==precision(wayPointX)) && (precision(me.y)==precision(wayPointY))){
-			ArrayList<Integer> waypointAccess = new ArrayList<Integer>();
-			for(int i=0; i<Demo.connectionMatrix.get(waypointPosition).size(); i++){
-				if(Demo.connectionMatrix.get(waypointPosition).get(i).equals(1)){
-					waypointAccess.add(i);
+		/* The previous waypoint is not added to the waypoint recorder,
+		 * making sure that the drone will not go back to the previous waypoint. */
+		if(ifDroneArriveWaypoint(drones)){
+			ArrayList<Integer> waypointRecorder = new ArrayList<Integer>();
+			if(Demo.connectionMatrix.get(newWaypoint).size() != 1){
+				for(int i=0; i<Demo.connectionMatrix.get(newWaypoint).size(); i++){
+					if(!Demo.connectionMatrix.get(newWaypoint).get(i).equals(preWaypoint)){
+						waypointRecorder.add(Demo.connectionMatrix.get(newWaypoint).get(i));
+					}
 				}
 			}
-			int newWaypoint = demo.random.nextInt(waypointAccess.size());
+			else{
+				waypointRecorder.add(Demo.connectionMatrix.get(newWaypoint).get(0));
+			}
+			/* The previous waypoint has been updated. */
+			preWaypoint = newWaypoint;
 			
-			wayPointX = Demo.waypointCoordinate.get(waypointAccess.get(newWaypoint)).get(0);
-			wayPointY = Demo.waypointCoordinate.get(waypointAccess.get(newWaypoint)).get(1);
-			waypointPosition = waypointAccess.get(newWaypoint);			
+			/* The new waypoint is randomly selected, then it is updated. */
+			int selectRandomWaypoint = demo.random.nextInt(waypointRecorder.size());
+			int waypointAllocation = waypointRecorder.get(selectRandomWaypoint);
+			wayPointX = Math.abs(Demo.waypointCoordinate.get(waypointAllocation).get(0) - Demo.originX);
+			wayPointY = Math.abs(Demo.waypointCoordinate.get(waypointAllocation).get(1) - Demo.originY);
+			newWaypoint = waypointAllocation;			
 		}
 		else{
 			double Mx = me.x;
@@ -118,6 +130,11 @@ public class Drone implements Steppable{
 			double newY = My - Sy;
 			
 			demo.drones.setObjectLocation(this, new Double2D(newX,newY));
+			
+			/* This is for checking the precision of the drone's current location
+			 * and the precision of the waypoint location. */
+//			System.out.println((int)(me.x)+" "+(int)(wayPointX));
+//			System.out.println((int)(me.y)+" "+(int)(wayPointY));
 		}
 			
 		timeToLive(demo);
@@ -225,6 +242,44 @@ public class Drone implements Steppable{
 //		String string = df.format(number);
 //		double result = Double.parseDouble(string);
 		return result;
+	}
+	
+	public boolean ifDroneArriveWaypoint(Continuous2D drones){
+		me = drones.getObjectLocation(this);
+		int Mx = (int)me.x;
+		int My = (int)me.y;
+		int Wx = (int)wayPointX;
+		int Wy = (int)wayPointY;
+		if((Mx == Wx) && (My == Wy)){
+			return true;
+		}
+		else if((Mx +1 == Wx) && (My == Wy)){
+			return true;
+		}
+		else if((Mx == Wx) && (My +1 == Wy)){
+			return true;
+		}
+		else if((Mx -1 == Wx) && (My == Wy)){
+			return true;
+		}
+		else if((Mx == Wx) && (My -1 == Wy)){
+			return true;
+		}
+		else if((Mx +1 == Wx) && (My +1 == Wy)){
+			return true;
+		}
+		else if((Mx +1 == Wx) && (My -1 == Wy)){
+			return true;
+		}
+		else if((Mx -1 == Wx) && (My +1 == Wy)){
+			return true;
+		}
+		else if((Mx -1 == Wx) && (My -1 == Wy)){
+			return true;
+		}
+		else{
+			return false;
+		}
 	}
 	
 	/* This method just consider that the drone just has only one data. */

@@ -4,17 +4,18 @@ import java.util.ArrayList;
 
 public class DataCount {
 	
-	private static String EpidemicallDataReceived = "/Users/Leo/Documents/MASON/mason/sim/app/drones/EpidemicAllDataReceived.txt";
-	private static String EpidemicstopAtFixedTimeStep = "/Users/Leo/Documents/MASON/mason/sim/app/drones/EpidemicStopAtFixedTimeStep.txt";
-	private static String SAndRallDataReceived = "/Users/Leo/Documents/MASON/mason/sim/app/drones/SAndRAllDataReceived.txt";
-	private static String SAndRstopAtFixedTimeStep = "/Users/Leo/Documents/MASON/mason/sim/app/drones/SAndRStopAtFixedTimeStep.txt";
-	private static String TTLAllDataReceived = "/Users/Leo/Documents/MASON/mason/sim/app/drones/TTLAllDataReceived.txt";
-	private static String TTLStopAtFixedTimeStep = "/Users/Leo/Documents/MASON/mason/sim/app/drones/TTLStopAtFixedTimeStep.txt";
-	private static String waypointCoordinate = "/Users/Leo/Documents/MASON/mason/sim/app/drones/Waypoint.txt";
-	private static String connectionMatrixFile = "/Users/Leo/Documents/MASON/mason/sim/app/drones/connectionMatrix.txt";
-	private static String buildingXFile = "/Users/Leo/Documents/MASON/mason/sim/app/drones/BuildingX.txt";
-	private static String buildingYFile = "/Users/Leo/Documents/MASON/mason/sim/app/drones/BuildingY.txt";
-	private static String mapSizeFile = "/Users/Leo/Documents/MASON/mason/sim/app/drones/MapSize.txt";
+	private static String basePath = "/Users/Leo/Documents/MASON/mason/sim/app/drones/";
+	private static String EpidemicallDataReceived = basePath+"EpidemicAllDataReceived.txt";
+	private static String EpidemicstopAtFixedTimeStep = basePath+"EpidemicStopAtFixedTimeStep.txt";
+	private static String SAndRallDataReceived = basePath+"SAndRAllDataReceived.txt";
+	private static String SAndRstopAtFixedTimeStep = basePath+"SAndRStopAtFixedTimeStep.txt";
+	private static String TTLAllDataReceived = basePath+"TTLAllDataReceived.txt";
+	private static String TTLStopAtFixedTimeStep = basePath+"TTLStopAtFixedTimeStep.txt";
+	private static String waypointCoordinate = basePath+"Waypoint.txt";
+	private static String connectionMatrixFile = basePath+"connectionMatrix.txt";
+	private static String buildingXFile = basePath+"BuildingX.txt";
+	private static String buildingYFile = basePath+"BuildingY.txt";
+	private static String mapSizeFile = basePath+"MapSize.txt";
 
 	public static void main(String[] args) {
 		System.out.println(FileInputOutput.lineCount(EpidemicallDataReceived));
@@ -58,6 +59,7 @@ public class DataCount {
 			System.out.println("Y: "+Y);
 		}
 		
+		/* Display the map's size. */
 		ArrayList<ArrayList<Double>> matlabData = new ArrayList<ArrayList<Double>>();
 		matlabData = DataConverter.stringToDouble(FileInputOutput.readFile(mapSizeFile));
 		double width = Math.abs(matlabData.get(0).get(0) - matlabData.get(1).get(0));

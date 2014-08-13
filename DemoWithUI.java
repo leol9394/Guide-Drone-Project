@@ -84,7 +84,7 @@ public class DemoWithUI extends GUIState{
 		waypointPortrayal.setField(demo.waypoints);
 		waypointPortrayal.setPortrayalForAll(
 				new LabelledPortrayal2D(
-						new OvalPortrayal2D(Color.red, 5.0),
+						new OvalPortrayal2D(Color.red,5.0),
 						1.0, null, Color.black, false));
 		
 		buildingPortrayal.setField(demo.buildings);
