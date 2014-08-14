@@ -18,3 +18,7 @@
 18. Drayton House
 19. Department of Chemistry
 20. Gordon Square Garden
+21. Top area
+21. Bottom area
+22. Left area
+23. Right area

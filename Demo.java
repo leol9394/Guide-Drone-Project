@@ -29,8 +29,8 @@ public class Demo extends SimState{
 	
 	/* The attributes of the simulator map. */
 	private static ArrayList<ArrayList<Double>> mapSize = DataConverter.stringToDouble(FileInputOutput.readFile(mapSizeFile));
-	protected int mapWidth = (int)Math.abs(mapSize.get(0).get(0) - mapSize.get(1).get(0));
-	protected int mapHeight = (int)Math.abs(mapSize.get(0).get(1) - mapSize.get(2).get(1));
+	protected static int mapWidth = (int)Math.abs(mapSize.get(0).get(0) - mapSize.get(1).get(0));
+	protected static int mapHeight = (int)Math.abs(mapSize.get(0).get(1) - mapSize.get(2).get(1));
 	protected static double originX = mapSize.get(0).get(0);
 	protected static double originY = mapSize.get(0).get(1);
 	protected Continuous2D drones = new Continuous2D(1.0, mapWidth, mapHeight);

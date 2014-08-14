@@ -96,7 +96,7 @@ public class DemoWithUI extends GUIState{
 	
 	public void init(Controller c){
 		super.init(c);
-		display = new Display2D(500,600,this);
+		display = new Display2D(Demo.mapWidth,Demo.mapHeight,this);
 		display.setClipping(true);
 		
 		display.setBackdrop(Color.white);
