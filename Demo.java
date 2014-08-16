@@ -48,7 +48,7 @@ public class Demo extends SimState{
 	protected static ArrayList<double[]> buildingY = DataConverter.stringToDoubleArray(FileInputOutput.readFile(buildingYFile));
 	
 	protected static int numCaptains = 1;
-	protected static int numDrones = 5;
+	protected static int numDrones = 1;
 	protected static int numData = 1;
 	protected static int numBuildings = buildingX.size();
 	
@@ -366,13 +366,14 @@ public class Demo extends SimState{
 			drone.droneNumber = i;
 			
 			/* Set up the drone's position. */
-			int initialDronePosition = i+random.nextInt(10);
+			//int initialDronePosition = i+random.nextInt(10);
+			int initialDronePosition = i;
 			int selectRandomWaypoint = random.nextInt(connectionMatrix.get(initialDronePosition).size());
 			int waypointAllocation = connectionMatrix.get(initialDronePosition).get(selectRandomWaypoint);
 			drone.wayPointX = Math.abs(waypointCoordinate.get(waypointAllocation).get(0) - originX);
 			drone.wayPointY = Math.abs(waypointCoordinate.get(waypointAllocation).get(1) - originY);
-			drone.preWaypoint = initialDronePosition;
 			drone.newWaypoint = waypointAllocation;
+			drone.preWaypoints.add(initialDronePosition);
 
 			/* Set up the data in each drone. */
 			for(int k=0; k<numData; k++){
