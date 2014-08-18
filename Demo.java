@@ -366,8 +366,7 @@ public class Demo extends SimState{
 			drone.droneNumber = i;
 			
 			/* Set up the drone's position. */
-			//int initialDronePosition = i+random.nextInt(10);
-			int initialDronePosition = i;
+			int initialDronePosition = i+random.nextInt(10);
 			int selectRandomWaypoint = random.nextInt(connectionMatrix.get(initialDronePosition).size());
 			int waypointAllocation = connectionMatrix.get(initialDronePosition).get(selectRandomWaypoint);
 			drone.wayPointX = Math.abs(waypointCoordinate.get(waypointAllocation).get(0) - originX);

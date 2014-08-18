@@ -2,6 +2,7 @@ package sim.app.drones;
 
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 import sim.app.drones.DataObject.HashCode;
 import sim.engine.*;
@@ -45,7 +46,7 @@ public class Drone implements Steppable{
 	protected double wayPointX;
 	protected double wayPointY;
 	protected int newWaypoint;
-	private int howManyWaypointsNotReturn = 4;
+	private int howManyWaypointsNotGoBack = 3;
 	
 	/* The velocity of the drones, 0.1 meters per time step. */
 	protected double velocity = 1.5; 
@@ -89,35 +90,59 @@ public class Drone implements Steppable{
 		
 		me = drones.getObjectLocation(this);
 		
-		/* The previous waypoint is not added to the waypoint recorder,
+		/* The previous waypoints will not be added to the available waypoints,
 		 * making sure that the drone will not go back to the previous waypoint. */
 		if(droneArriveWaypoint(drones)){
-			ArrayList<Integer> waypointRecorder = new ArrayList<Integer>();
+			ArrayList<Integer> availableWaypoints = new ArrayList<Integer>();
 			if(Demo.connectionMatrix.get(newWaypoint).size() != 1){
 				for(int i=0; i<Demo.connectionMatrix.get(newWaypoint).size(); i++){
-					if(noPreWaypointChecker(Demo.connectionMatrix.get(newWaypoint).get(i))){
-						waypointRecorder.add(Demo.connectionMatrix.get(newWaypoint).get(i));
+					if(notInPreWaypointListChecker(Demo.connectionMatrix.get(newWaypoint).get(i))){
+						availableWaypoints.add(Demo.connectionMatrix.get(newWaypoint).get(i));
 					}
+				}
+				/* If all the available waypoints are all in previous waypoints,
+				 * the oldest one in previous waypoints will be pointed as the new waypoint. */
+				if(preWaypoints.containsAll(availableWaypoints)){
+					System.out.println(newWaypoint);
+					ArrayList<Integer> availableWaypointsPositionInPreWaypoints = new ArrayList<Integer>();
+					for(int i=0; i<Demo.connectionMatrix.get(newWaypoint).size(); i++){
+						availableWaypointsPositionInPreWaypoints.add(preWaypoints.indexOf(Demo.connectionMatrix.get(newWaypoint).get(i)));
+					}
+					int oldestPosition = Collections.min(availableWaypointsPositionInPreWaypoints);
+					availableWaypoints.add(preWaypoints.get(oldestPosition));
 				}
 			}
 			else{
-				waypointRecorder.add(Demo.connectionMatrix.get(newWaypoint).get(0));
+				availableWaypoints.add(Demo.connectionMatrix.get(newWaypoint).get(0));
 			}
 			/* The previous waypoint has been updated. */
 			preWaypoints.add(newWaypoint);
-			
 			/* The new waypoint is randomly selected, then it is updated. */
-			int selectRandomWaypoint = demo.random.nextInt(waypointRecorder.size());
-			int waypointAllocation = waypointRecorder.get(selectRandomWaypoint);
+			int selectRandomWaypoint = demo.random.nextInt(availableWaypoints.size());
+			int waypointAllocation = availableWaypoints.get(selectRandomWaypoint);
 			wayPointX = Math.abs(Demo.waypointCoordinate.get(waypointAllocation).get(0) - Demo.originX);
 			wayPointY = Math.abs(Demo.waypointCoordinate.get(waypointAllocation).get(1) - Demo.originY);
 			newWaypoint = waypointAllocation;
 			
-			if(preWaypoints.size() == howManyWaypointsNotReturn){
-				for(int i=0; i<howManyWaypointsNotReturn-1; i++){
+			/* Output the new available waypoints. */
+//			String b="";
+//			for(int bb:availableWaypoints){
+//			b += bb+" ";
+//			}
+//			System.out.println("New waypoints: "+b);
+			
+			if(preWaypoints.size() > howManyWaypointsNotGoBack){
+				for(int i=0; i<howManyWaypointsNotGoBack; i++){
 					preWaypoints.remove(0);
 				}
 			}
+			
+			/* Output the previous waypoints. */
+//			String a="";
+//			for(int aa:preWaypoints){
+//			a += aa+" ";
+//			}
+//			System.out.println("Previous waypoints: "+a);
 		}
 		else{
 			double Mx = me.x;
@@ -201,7 +226,7 @@ public class Drone implements Steppable{
 		return true;
 	}
 	
-	public boolean noPreWaypointChecker(int waypoint){
+	public boolean notInPreWaypointListChecker(int waypoint){
 		for(int i=0; i<preWaypoints.size(); i++){
 			if(waypoint == preWaypoints.get(i)){
 				return false;
@@ -298,7 +323,7 @@ public class Drone implements Steppable{
 		}
 	}
 	
-	/* This method just consider that the drone just has only one data. */
+	/** This method just consider that the drone just has only one data. */
 //	public void TTL(Demo demo){
 //	if(!droneItselfDataSentChecker()){
 //		for(int i=0; i<dataObject.size(); i++){
@@ -310,7 +335,8 @@ public class Drone implements Steppable{
 //		}
 //	}
 //}
-	
+
+	/** The following method is for inspecting drone status in Model. */
 //	public ArrayList<Long> getTime(){
 //	ArrayList<Long> time = new ArrayList<Long>();
 //	for(int i=0; i<dataObject.size(); i++){
