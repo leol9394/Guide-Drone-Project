@@ -28,7 +28,19 @@ public class DataObject {
 	private long generatedTime;
 	private double timeStep;
 	private HashCode hashCode = new HashCode();
-	//private Object object;
+//	private Object object;
+	
+	public DataObject(){}
+	
+	public DataObject(DataObject another){
+		this.source = another.source;
+		this.data = another.data;
+		this.generatedTime = another.generatedTime;
+		this.timeStep = another.timeStep;
+		this.hashCode = another.hashCode;
+//		this.object = another.object;
+				
+	}
 	
 	public void setSource(int source){
 		this.source = source;

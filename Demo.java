@@ -48,8 +48,8 @@ public class Demo extends SimState{
 	protected static ArrayList<double[]> buildingY = DataConverter.stringToDoubleArray(FileInputOutput.readFile(buildingYFile));
 	
 	protected static int numCaptains = 1;
-	protected static int numDrones = 1;
-	protected static int numData = 1;
+	protected static int numDrones = 2;
+	protected static int numData = 2;
 	protected static int numBuildings = buildingX.size();
 	
 	private static String[][] encounteringDrones;
@@ -97,6 +97,7 @@ public class Demo extends SimState{
 					}
 				}
 				else{
+					((Drone)(getDrones.objs[i])).nearbyDrones.clear();
 					encounteringDrones[i][j]="Not Connected";
 				}
 			}
@@ -222,22 +223,24 @@ public class Demo extends SimState{
 	}
 	
 	public void epidemic(Drone A, Drone B){
-			for(int i=0; i<B.dataObject.size(); i++){
-				if(!A.ACK.contains(B.dataObject.get(i).getHashCode())){	
-					if(!A.hashCode.contains(B.dataObject.get(i).getHashCode())){
-						
-						A.hashCode.add(B.dataObject.get(i).getHashCode());
-						A.dataObject.add(B.dataObject.get(i));
-					}
+		for(int i=0; i<B.dataObject.size(); i++){
+			if(!A.ACK.contains(B.dataObject.get(i).getHashCode())){	
+				if(!A.hashCode.contains(B.dataObject.get(i).getHashCode())){
+					
+					A.hashCode.add(B.dataObject.get(i).getHashCode());
+					DataObject dataObjectClone = new DataObject(B.dataObject.get(i));
+					A.dataObject.add(dataObjectClone);
 				}
 			}
+		}
 
 		for(int j=0; j<A.dataObject.size(); j++){
 			if(!B.ACK.contains(A.dataObject.get(j).getHashCode())){
 				if(!B.hashCode.contains(A.dataObject.get(j).getHashCode())){
 					
 					B.hashCode.add(A.dataObject.get(j).getHashCode());
-					B.dataObject.add(A.dataObject.get(j));
+					DataObject dataObjectClone = new DataObject(A.dataObject.get(j));
+					B.dataObject.add(dataObjectClone);
 				}
 			}	
 		}
@@ -250,7 +253,8 @@ public class Demo extends SimState{
 					if(B.dataObject.get(i).getSource()==sourceB){
 						if(!(B.copies==0)){
 							A.hashCode.add(B.dataObject.get(i).getHashCode());
-							A.dataObject.add(B.dataObject.get(i));
+							DataObject dataObjectClone = new DataObject(B.dataObject.get(i));
+							A.dataObject.add(dataObjectClone);
 							B.copies --;
 						}
 					}
@@ -264,7 +268,8 @@ public class Demo extends SimState{
 					if(A.dataObject.get(j).getSource()==sourceA){
 						if(!(A.copies==0)){
 							B.hashCode.add(A.dataObject.get(j).getHashCode());
-							B.dataObject.add(A.dataObject.get(j));
+							DataObject dataObjectClone = new DataObject(A.dataObject.get(j));
+							B.dataObject.add(dataObjectClone);
 							A.copies--;
 						}
 					}
@@ -373,6 +378,7 @@ public class Demo extends SimState{
 			drone.wayPointY = Math.abs(waypointCoordinate.get(waypointAllocation).get(1) - originY);
 			drone.newWaypoint = waypointAllocation;
 			drone.preWaypoints.add(initialDronePosition);
+			drone.dataSize = Demo.numData;
 
 			/* Set up the data in each drone. */
 			for(int k=0; k<numData; k++){
