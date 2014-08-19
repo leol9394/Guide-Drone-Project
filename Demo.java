@@ -38,9 +38,6 @@ public class Demo extends SimState{
 	protected Continuous2D waypoints = new Continuous2D(1.0, mapWidth, mapHeight);
 	protected Continuous2D buildings = new Continuous2D(1.0, mapWidth, mapHeight);
 	
-	/* The fixed time step that output the state. */
-	private int recordTimeStep = 1000;
-	
 	/* The waypoint and building attributes. */
 	protected static ArrayList<ArrayList<Double>> waypointCoordinate = DataConverter.stringToDouble(FileInputOutput.readFile(waypointFile));
 	protected static ArrayList<ArrayList<Integer>> connectionMatrix = DataConverter.stringToInteger(FileInputOutput.readFile(connectionMatrixFile));
@@ -48,18 +45,25 @@ public class Demo extends SimState{
 	protected static ArrayList<double[]> buildingY = DataConverter.stringToDoubleArray(FileInputOutput.readFile(buildingYFile));
 	
 	protected static int numCaptains = 1;
-	protected static int numDrones = 2;
+	protected static int numDrones = 3;
 	protected static int numData = 2;
 	protected static int numBuildings = buildingX.size();
-	
+		
 	private static String[][] encounteringDrones;
 	private static String[][] captainConnectedDrones;
+	
+	/* The attributes to ouput the data to a file. */
 	private boolean[] allDataReceivedOutputState = new boolean[numDrones+numCaptains];
 	private String[] allDataReceivedOutput = new String[numDrones+numCaptains];
 	private String[] stopAtFixedTimeStepOutput = new String[numDrones+numCaptains];
 	private boolean allDataOutput = false;
 	private boolean fixedTimeDataOutput = false;
-	protected static boolean isTimeToLiveStart = false;
+	private int recordTimeStep = 1000;
+	
+	/* The attribute of Time-To-Live Protocol. */
+	protected static int numHop = 3;
+	protected static boolean timeToLiveStartTimeStep = false;
+	protected static boolean timeToLiveStartHopCount = false;
 	
 	public Demo(long seed){
 		super(seed);
@@ -67,7 +71,8 @@ public class Demo extends SimState{
 	
 	public String[][] getDronesCommunication(){
 		/* Start TTL or not. */
-		//timeToLive();
+		//timeToLiveTimeStep();
+		timeToLiveHopCount();
 		
 		Bag getDrones = drones.allObjects;
 		encounteringDrones = new String[numDrones][numDrones];
@@ -222,25 +227,34 @@ public class Demo extends SimState{
 		return true;
 	}
 	
+	/** When a drone encounter the other one:
+	 *  1. Add the new data's hash code to vector.
+	 *  2. Clone the new data then add the data to itself's data object list.
+	 *  3. The new data's time is re-calculated. */
 	public void epidemic(Drone A, Drone B){
 		for(int i=0; i<B.dataObject.size(); i++){
 			if(!A.ACK.contains(B.dataObject.get(i).getHashCode())){	
-				if(!A.hashCode.contains(B.dataObject.get(i).getHashCode())){
+				if(!A.vector.contains(B.dataObject.get(i).getHashCode())){
 					
-					A.hashCode.add(B.dataObject.get(i).getHashCode());
+					A.vector.add(B.dataObject.get(i).getHashCode());
 					DataObject dataObjectClone = new DataObject(B.dataObject.get(i));
+					B.dataObject.get(i).setHopCount(B.dataObject.get(i).getHopCount()-1);
 					A.dataObject.add(dataObjectClone);
+					A.dataObject.get(A.dataObject.size()-1).setTimeStep(schedule.getTime());
+					
 				}
 			}
 		}
 
 		for(int j=0; j<A.dataObject.size(); j++){
 			if(!B.ACK.contains(A.dataObject.get(j).getHashCode())){
-				if(!B.hashCode.contains(A.dataObject.get(j).getHashCode())){
+				if(!B.vector.contains(A.dataObject.get(j).getHashCode())){
 					
-					B.hashCode.add(A.dataObject.get(j).getHashCode());
+					B.vector.add(A.dataObject.get(j).getHashCode());
 					DataObject dataObjectClone = new DataObject(A.dataObject.get(j));
+					A.dataObject.get(j).setHopCount(A.dataObject.get(j).getHopCount()-1);
 					B.dataObject.add(dataObjectClone);
+					B.dataObject.get(B.dataObject.size()-1).setTimeStep(schedule.getTime());
 				}
 			}	
 		}
@@ -249,12 +263,14 @@ public class Demo extends SimState{
 	public void sprayAndWait(Drone A, Drone B, int sourceA, int sourceB){
 		for(int i=0; i<B.dataObject.size(); i++){
 			if(!A.ACK.contains(B.dataObject.get(i).getHashCode())){
-				if(!A.hashCode.contains(B.dataObject.get(i).getHashCode())){
+				if(!A.vector.contains(B.dataObject.get(i).getHashCode())){
 					if(B.dataObject.get(i).getSource()==sourceB){
 						if(!(B.copies==0)){
-							A.hashCode.add(B.dataObject.get(i).getHashCode());
+							A.vector.add(B.dataObject.get(i).getHashCode());
 							DataObject dataObjectClone = new DataObject(B.dataObject.get(i));
+							B.dataObject.get(i).setHopCount(B.dataObject.get(i).getHopCount()-1);
 							A.dataObject.add(dataObjectClone);
+							A.dataObject.get(A.dataObject.size()-1).setTimeStep(schedule.getTime());
 							B.copies --;
 						}
 					}
@@ -264,12 +280,14 @@ public class Demo extends SimState{
 		
 		for(int j=0; j<A.dataObject.size(); j++){
 			if(!B.ACK.contains(A.dataObject.get(j).getHashCode())){
-				if(!B.hashCode.contains(A.dataObject.get(j).getHashCode())){
+				if(!B.vector.contains(A.dataObject.get(j).getHashCode())){
 					if(A.dataObject.get(j).getSource()==sourceA){
 						if(!(A.copies==0)){
-							B.hashCode.add(A.dataObject.get(j).getHashCode());
+							B.vector.add(A.dataObject.get(j).getHashCode());
 							DataObject dataObjectClone = new DataObject(A.dataObject.get(j));
+							A.dataObject.get(j).setHopCount(A.dataObject.get(j).getHopCount()-1);
 							B.dataObject.add(dataObjectClone);
+							B.dataObject.get(B.dataObject.size()-1).setTimeStep(schedule.getTime());
 							A.copies--;
 						}
 					}
@@ -278,8 +296,12 @@ public class Demo extends SimState{
 		}
 	}
 	
-	public void timeToLive(){
-		isTimeToLiveStart = true;
+	public void timeToLiveTimeStep(){
+		timeToLiveStartTimeStep = true;
+	}
+	
+	public void timeToLiveHopCount(){
+		timeToLiveStartHopCount = true;
 	}
 
 	public void captainsDronesDataACKsCommunication(Captain captain, Drone drone){
@@ -291,18 +313,20 @@ public class Demo extends SimState{
 				
 			}
 			else{
-				drone.hashCode.remove(drone.dataObject.get(i).getHashCode());
+				drone.vector.remove(drone.dataObject.get(i).getHashCode());
 				drone.dataObject.remove(drone.dataObject.get(i));
 			}
 		}
 		
-		for(int j=0; j<captain.hashCode.size(); j++){
-			if(!drone.ACK.contains(captain.hashCode.get(j))){
-				drone.ACK.add(captain.hashCode.get(j));
+		//if(!timeToLiveStartTimeStep && !timeToLiveStartHopCount){
+			for(int j=0; j<captain.hashCode.size(); j++){
+				if(!drone.ACK.contains(captain.hashCode.get(j))){
+					drone.ACK.add(captain.hashCode.get(j));
+				}
 			}
-		}
-		
-		drone.ACKTimestamp = schedule.getTime();
+			drone.ACKTimestamp = schedule.getTime();
+		//}
+
 		
 		Collections.sort(captain.dataObject, new Comparator<DataObject>(){
 			@Override
@@ -378,7 +402,6 @@ public class Demo extends SimState{
 			drone.wayPointY = Math.abs(waypointCoordinate.get(waypointAllocation).get(1) - originY);
 			drone.newWaypoint = waypointAllocation;
 			drone.preWaypoints.add(initialDronePosition);
-			drone.dataSize = Demo.numData;
 
 			/* Set up the data in each drone. */
 			for(int k=0; k<numData; k++){
@@ -388,8 +411,9 @@ public class Demo extends SimState{
 				data.setTime(System.nanoTime());
 				data.setHashCodeGeneratedTime(data.getTime());
 				data.setTimeStep(schedule.getTime() + 1.0);
+				data.setHopCount(numHop);
 				data.setHashCode(data.hashCode());
-				drone.hashCode.add(data.getHashCode());
+				drone.vector.add(data.getHashCode());
 				drone.dataObject.add(data);
 			}
 			

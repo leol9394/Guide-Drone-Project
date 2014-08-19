@@ -17,9 +17,13 @@ public class Drone implements Steppable{
 	protected double scale;
 	protected Double2D me;
 	
+	/* 1. dataObject: The data that the drone holds.
+	 * 2. nearbyDrones: The drones' number which are within the communication area. 
+	 * 3. vector: To indicate that what data the drone is holding. Stored by hash code.
+	 * 4. ACK: The acknowledge to eliminate the data which has arrived the destination. */
 	protected ArrayList<DataObject> dataObject = new ArrayList<DataObject>();
 	protected ArrayList<Integer> nearbyDrones;
-	protected ArrayList<HashCode> hashCode = new ArrayList<HashCode>();
+	protected ArrayList<HashCode> vector = new ArrayList<HashCode>();
 	protected ArrayList<HashCode> ACK = new ArrayList<HashCode>();
 	
 	/* The duration that ACK exist, in simulator steps. */
@@ -38,11 +42,9 @@ public class Drone implements Steppable{
 	protected int copies = 1;
 	
 	/* The Time-to-Live protocol attributes. */
-	protected int[] ownDataDuration = new int[Demo.numData * 2];
-	protected int[] itselfDataPosition = new int[Demo.numData];
 	protected int timeToLive = 100;
-	protected int dataSize;
 	
+	/* The attributes of the waypoints. */
 	protected ArrayList<Integer> preWaypoints = new ArrayList<Integer>();
 	protected double wayPointX;
 	protected double wayPointY;
@@ -63,19 +65,6 @@ public class Drone implements Steppable{
 		else{
 			String result = "Drone: "+droneNumber+" Time: "+duration;
 			return result;
-		}
-	}
-	
-	public ArrayList<Integer> getNearbyDrones(){
-		return nearbyDrones;
-	}
-	
-	public double getACKDuration(){
-		if(ACKTimestamp == 0){
-			return ACKTimestamp;
-		}
-		else{
-			return (currentTime - ACKTimestamp);
 		}
 	}
 	
@@ -182,8 +171,8 @@ public class Drone implements Steppable{
 			if((currentTime - ACKTimestamp) < ACKDuration){
 				if(!dataObject.isEmpty()){
 					for(int i=0; i<ACK.size(); i++){
-						if(hashCode.contains(ACK.get(i))){
-							hashCode.remove(ACK.get(i));
+						if(vector.contains(ACK.get(i))){
+							vector.remove(ACK.get(i));
 							
 							for(int j=0; j<dataObject.size(); j++){
 								if(dataObject.get(j).getHashCode().equals(ACK.get(i))){
@@ -235,63 +224,21 @@ public class Drone implements Steppable{
 	}
 	
 	public void timeToLive(Demo demo){
-		if(Demo.isTimeToLiveStart){			
-			newDataTimeUpdate(demo);
+		if(Demo.timeToLiveStartTimeStep){			
 			for(int i=0; i<dataObject.size(); i++){
 				if((demo.schedule.getTime() - dataObject.get(i).getTimeStep()) > timeToLive){
 					dataObject.remove(i);
 				}
 			}
 		}	
-	}
-	
-	
-	public void newDataTimeUpdate(Demo demo){
-		if(dataObject.size() > dataSize){
-				for(int i=(dataObject.size()-dataSize); i<dataObject.size(); i++){
-					dataObject.get(i).setTimeStep(123.0);
+		if(Demo.timeToLiveStartHopCount){
+			for(int i=0; i<dataObject.size(); i++){
+				if(dataObject.get(i).getHopCount()==0){
+					dataObject.remove(i);
 				}
-				for(int i=0; i<dataObject.size(); i++){
-					System.out.println(droneNumber+":"+dataObject.get(i).getTimeStep());
-					System.out.println(" ");
-				}	
-				dataSize = dataObject.size();
+			}
 		}
 	}
-	
-	/** The following three methods are used together as TTL. 
-	 * This approach only eliminate each drone's own data. */
-//	public void itselfDataDuration(Demo demo){
-//		if(!dataObject.isEmpty()){
-//			int j=0;
-//			for(int i=0; i<itselfDataPosition.length; i++){
-//				ownDataDuration[j] = ((int)(demo.schedule.getTime() - dataObject.get(itselfDataPosition[i]).getTimeStep()));
-//				ownDataDuration[j+1] = itselfDataPosition[i];
-//				j = j+2;
-//			}
-//		}
-//	}
-	
-//	public void itselfDataDurationCheckerAndRemoval(){
-//		if(!dataObject.isEmpty()){
-//			for(int i=0; i<ownDataDuration.length; i=i+2){
-//				if(ownDataDuration[i]==timeToLive){
-//					System.out.println(ownDataDuration[i+1]);
-//					//dataObject.remove(ownDataDuration[i+1]);
-//				}
-//			}
-//		}
-//	}
-	
-//	public void droneItselfDataPosition(){
-//		int j = 0;
-//		for(int i=0; i<dataObject.size(); i++){
-//			if(dataObject.get(i).getSource()==droneNumber){
-//				itselfDataPosition[j] = i;
-//				j++;
-//			}
-//		}
-//	}
 	
 	public boolean droneArriveWaypoint(Continuous2D drones){
 		me = drones.getObjectLocation(this);
@@ -343,12 +290,41 @@ public class Drone implements Steppable{
 //	}
 
 	/** The following method is for inspecting drone status in Model. */
-//	public ArrayList<Double> getTimeStep(){
-//		ArrayList<Double> time = new ArrayList<Double>();
-//		for(int i=0; i<dataObject.size(); i++){
-//			time.add(dataObject.get(i).getTimeStep());
+	public ArrayList<Double> getTimeStep(){
+		ArrayList<Double> time = new ArrayList<Double>();
+		for(int i=0; i<dataObject.size(); i++){
+			time.add(dataObject.get(i).getTimeStep());
+		}
+		return time;
+	}
+	
+	public ArrayList<Integer> getNearbyDrones(){
+		return nearbyDrones;
+	}
+	
+	public double getACKDuration(){
+		if(ACKTimestamp == 0){
+			return ACKTimestamp;
+		}
+		else{
+			return (currentTime - ACKTimestamp);
+		}
+	}
+	
+	public ArrayList<Integer> getHopCount(){
+		ArrayList<Integer> hopCount = new ArrayList<>();
+		for(int i=0; i<dataObject.size(); i++){
+			hopCount.add(dataObject.get(i).getHopCount());
+		}
+		return hopCount;
+	}
+	
+//	public ArrayList<Integer> getHashCode(){
+//		ArrayList<Integer> result = new ArrayList<Integer>();
+//		for(int i=0; i<hashCode.size(); i++){
+//			result.add(hashCode.get(i).getHashCode());
 //		}
-//		return time;
+//		return result;
 //	}
 	
 //	public ArrayList<Long> getTime(){

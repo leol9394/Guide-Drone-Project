@@ -27,6 +27,7 @@ public class DataObject {
 	private int data;
 	private long generatedTime;
 	private double timeStep;
+	private int hopCount;
 	private HashCode hashCode = new HashCode();
 //	private Object object;
 	
@@ -37,6 +38,7 @@ public class DataObject {
 		this.data = another.data;
 		this.generatedTime = another.generatedTime;
 		this.timeStep = another.timeStep;
+		this.hopCount = another.hopCount;
 		this.hashCode = another.hashCode;
 //		this.object = another.object;
 				
@@ -72,6 +74,14 @@ public class DataObject {
 	
 	public double getTimeStep(){
 		return timeStep;
+	}
+	
+	public void setHopCount(int hopCount){
+		this.hopCount = hopCount;
+	}
+	
+	public int getHopCount(){
+		return hopCount;
 	}
 	
 	public void setHashCode(int hashCode){
