@@ -23,7 +23,6 @@ public class DemoWithUI extends GUIState{
 		DemoWithUI vid = new DemoWithUI();
 		Console c = new Console(vid);
 		c.setVisible(true);
-		
 	}
 	
 	public DemoWithUI(){
@@ -69,8 +68,8 @@ public class DemoWithUI extends GUIState{
 									new LabelledPortrayal2D(
 											new OvalPortrayal2D(),
 											5.0, null, Color.black, false),
-											0, 10.0, Color.green, false),
-											0, 10.0, Color.red, true)));
+											0, 20.0, Color.green, false),
+											0, 20.0, Color.red, true)));
 		
 		captainPortrayal.setField(demo.captains);
 		captainPortrayal.setPortrayalForAll(
@@ -79,7 +78,7 @@ public class DemoWithUI extends GUIState{
 								new LabelledPortrayal2D(
 										new RectanglePortrayal2D(5.0),
 										10.0, null, Color.black, false),
-										0, 20.0, Color.green, false)));
+										0, 30.0, Color.blue, false)));
 		
 		waypointPortrayal.setField(demo.waypoints);
 		waypointPortrayal.setPortrayalForAll(

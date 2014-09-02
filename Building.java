@@ -5,7 +5,7 @@ import java.util.ArrayList;
 
 import sim.portrayal.simple.ShapePortrayal2D;
 
-public class Building extends ShapePortrayal2D{
+public class Building extends ShapePortrayal2D {
 	
 	private static final long serialVersionUID = 1;
 	protected ArrayList<Double> X = new ArrayList<Double>();
@@ -18,4 +18,5 @@ public class Building extends ShapePortrayal2D{
 		this.buildingX = xpoints;
 		this.buildingY = ypoints;
 	}
+	
 }

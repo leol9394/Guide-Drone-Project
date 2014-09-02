@@ -39,19 +39,5 @@ public class DataConverter {
 		}
 		return result;
 	}
-	
-	public static int mapWidth(ArrayList<ArrayList<String>> string){
-		ArrayList<ArrayList<Double>> matlabData = new ArrayList<ArrayList<Double>>();
-		matlabData = stringToDouble(string);
-		double width = Math.abs(matlabData.get(0).get(0) - matlabData.get(1).get(0));
-		return (int)width;
-	}
-	
-	public static int mapHeight(ArrayList<ArrayList<String>> string){
-		ArrayList<ArrayList<Double>> matlabData = new ArrayList<ArrayList<Double>>();
-		matlabData = stringToDouble(string);
-		double height = Math.abs(matlabData.get(0).get(1) - matlabData.get(2).get(1));
-		return (int)height;
-	}
 
 }

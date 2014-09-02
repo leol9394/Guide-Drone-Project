@@ -11,8 +11,8 @@ public class MouseMovement {
 		try {
 			Robot mouse = new Robot();
 			// It is corresponding to the resolution of Retina Macbook 13, But also used in iMac.
-			mouse.mouseMove(535, 30);
-			int buttons = InputEvent.BUTTON1_DOWN_MASK;
+			mouse.mouseMove(490, 30);
+			int buttons = InputEvent.BUTTON1_MASK;
 			mouse.mousePress(buttons);
 			mouse.mouseRelease(buttons);
 		} catch (AWTException e) {
@@ -24,8 +24,8 @@ public class MouseMovement {
 		try {
 			Robot mouse = new Robot();
 			// It is corresponding to the resolution of Retina Macbook 13, But also used in iMac.
-			mouse.mouseMove(535, 385);
-			int buttons = InputEvent.BUTTON1_DOWN_MASK;
+			mouse.mouseMove(490, 385);
+			int buttons = InputEvent.BUTTON1_MASK;
 			mouse.mousePress(buttons);
 			mouse.mouseRelease(buttons);
 		} catch (AWTException e) {

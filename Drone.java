@@ -4,7 +4,7 @@ package sim.app.drones;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import sim.app.drones.DataObject.HashCode;
+import sim.app.drones.Bundle.HashCode;
 import sim.engine.*;
 import sim.field.continuous.*;
 import sim.util.*;
@@ -21,7 +21,7 @@ public class Drone implements Steppable{
 	 * 2. nearbyDrones: The drones' number which are within the communication area. 
 	 * 3. vector: To indicate that what data the drone is holding. Stored by hash code.
 	 * 4. ACK: The acknowledge to eliminate the data which has arrived the destination. */
-	protected ArrayList<DataObject> dataObject = new ArrayList<DataObject>();
+	protected ArrayList<Bundle> dataObject = new ArrayList<Bundle>();
 	protected ArrayList<Integer> nearbyDrones;
 	protected ArrayList<HashCode> vector = new ArrayList<HashCode>();
 	protected ArrayList<HashCode> ACK = new ArrayList<HashCode>();
@@ -38,10 +38,10 @@ public class Drone implements Steppable{
 	protected boolean isItselfDataSent = false;
 	protected boolean isResultWritten = false;
 	
-	/* The copies for the Spray and Wait Routing Protocol. */
-	protected int copies = 1;
+	/* The velocity of the drones, x meters per time step. */
+	protected double velocity = 0.15; 
 	
-	/* The Time-to-Live protocol attributes. */
+	/* The Time-to-Live protocol attributes (time step). */
 	protected int timeToLive = 100;
 	
 	/* The attributes of the waypoints. */
@@ -51,25 +51,11 @@ public class Drone implements Steppable{
 	protected int newWaypoint;
 	private int howManyWaypointsNotGoBack = 4;
 	
-	/* The velocity of the drones, x meters per time step. */
-	protected double velocity = 1.5; 
-	
-	public String toString() {
-		if(!dataObject.isEmpty()){
-			String result = "Drone: "+droneNumber+" Time: "+duration+" Data: ";
-			for(int i=0; i<dataObject.size(); i++){
-				result += " " + dataObject.get(i).getData();
-			}
-			return result;
-		}
-		else{
-			String result = "Drone: "+droneNumber+" Time: "+duration;
-			return result;
-		}
-	}
+	/* The copies for the Spray and Wait Routing Protocol. */
+	protected int copies = 2;
 	
 	public void step(SimState state){
-		scale = 5.0;
+		scale = 10.0;
 
 		move(state);
 	}
@@ -86,7 +72,7 @@ public class Drone implements Steppable{
 			ArrayList<Integer> availableWaypoints = new ArrayList<Integer>();
 			if(Demo.connectionMatrix.get(newWaypoint).size() != 1){
 				for(int i=0; i<Demo.connectionMatrix.get(newWaypoint).size(); i++){
-					if(notInPreWaypointListChecker(Demo.connectionMatrix.get(newWaypoint).get(i))){
+					if(notInPreWaypointList(Demo.connectionMatrix.get(newWaypoint).get(i))){
 						availableWaypoints.add(Demo.connectionMatrix.get(newWaypoint).get(i));
 					}
 				}
@@ -115,25 +101,11 @@ public class Drone implements Steppable{
 			wayPointY = Math.abs(Demo.waypointCoordinate.get(waypointAllocation).get(1) - Demo.originY);
 			newWaypoint = waypointAllocation;
 			
-			/* Output the new available waypoints. */
-//			String b="";
-//			for(int bb:availableWaypoints){
-//			b += bb+" ";
-//			}
-//			System.out.println("New waypoints: "+b);
-			
 			if(preWaypoints.size() > howManyWaypointsNotGoBack){
 				for(int i=0; i<howManyWaypointsNotGoBack; i++){
 					preWaypoints.remove(0);
 				}
 			}
-			
-			/* Output the previous waypoints. */
-//			String a="";
-//			for(int aa:preWaypoints){
-//			a += aa+" ";
-//			}
-//			System.out.println("Previous waypoints: "+a);
 		}
 		else{
 			double Mx = me.x;
@@ -153,14 +125,13 @@ public class Drone implements Steppable{
 			double newY = My - Sy;
 			
 			demo.drones.setObjectLocation(this, new Double2D(newX,newY));
-			
-			/* This is for checking the precision of the drone's current location
-			 * and the precision of the waypoint location. */
-//			System.out.println((int)(me.x)+" "+(int)(wayPointX));
-//			System.out.println((int)(me.y)+" "+(int)(wayPointY));
+
 		}
+		
 		timeToLive(demo);
+		
 		vaccination(demo);
+		
 		timer(demo);
 	}
 	
@@ -195,7 +166,7 @@ public class Drone implements Steppable{
 			duration = (endTime - startTime);
 		}
 		else{	
-			if(droneItselfDataSentChecker()){
+			if(droneItselfDataSent()){
 				endTime = demo.schedule.getTime();
 				isItselfDataSent = true;
 			}
@@ -205,7 +176,7 @@ public class Drone implements Steppable{
 		}
 	}
 	
-	public boolean droneItselfDataSentChecker(){
+	public boolean droneItselfDataSent(){
 		for(int i=0; i<dataObject.size(); i++){
 			if(dataObject.get(i).getSource()==droneNumber){
 				return false;
@@ -214,7 +185,7 @@ public class Drone implements Steppable{
 		return true;
 	}
 	
-	public boolean notInPreWaypointListChecker(int waypoint){
+	public boolean notInPreWaypointList(int waypoint){
 		for(int i=0; i<preWaypoints.size(); i++){
 			if(waypoint == preWaypoints.get(i)){
 				return false;
@@ -233,7 +204,7 @@ public class Drone implements Steppable{
 		}	
 		if(Demo.timeToLiveStartHopCount){
 			for(int i=0; i<dataObject.size(); i++){
-				if(dataObject.get(i).getHopCount()==0){
+				if(dataObject.get(i).getHopCount()<1){
 					dataObject.remove(i);
 				}
 			}
@@ -277,19 +248,26 @@ public class Drone implements Steppable{
 			return false;
 		}
 	}
-	
-	/** This method is for rounding the location of the drone and the waypoints. */
-//	public double precision(double number){
-//		/* Results with one decimal place without rounding off. */
-//		double result = Math.floor(number * 10) / 10;
-//		/* Results rounded with one decimal place. */
-////		DecimalFormat df = new DecimalFormat("#.0");
-////		String string = df.format(number);
-////		double result = Double.parseDouble(string);
-//		return result;
-//	}
 
 	/** The following method is for inspecting drone status in Model. */
+		public String toString() {
+		if(!dataObject.isEmpty()){
+			String result = "Drone: "+droneNumber+" Time: "+duration+" Data: ";
+			for(int i=0; i<dataObject.size(); i++){
+				result += " " + dataObject.get(i).getData();
+			}
+			return result;
+		}
+		else{
+			String result = "Drone: "+droneNumber+" Time: "+duration;
+			return result;
+		}
+	}
+	
+//	public String toString(){
+//		return "";
+//	}
+	
 	public ArrayList<Double> getTimeStep(){
 		ArrayList<Double> time = new ArrayList<Double>();
 		for(int i=0; i<dataObject.size(); i++){
@@ -302,22 +280,22 @@ public class Drone implements Steppable{
 		return nearbyDrones;
 	}
 	
-	public double getACKDuration(){
-		if(ACKTimestamp == 0){
-			return ACKTimestamp;
-		}
-		else{
-			return (currentTime - ACKTimestamp);
-		}
-	}
+//	public double getACKDuration(){
+//		if(ACKTimestamp == 0){
+//			return ACKTimestamp;
+//		}
+//		else{
+//			return (currentTime - ACKTimestamp);
+//		}
+//	}
 	
-	public ArrayList<Integer> getHopCount(){
-		ArrayList<Integer> hopCount = new ArrayList<>();
-		for(int i=0; i<dataObject.size(); i++){
-			hopCount.add(dataObject.get(i).getHopCount());
-		}
-		return hopCount;
-	}
+//	public ArrayList<Integer> getHopCount(){
+//		ArrayList<Integer> hopCount = new ArrayList<Integer>();
+//		for(int i=0; i<dataObject.size(); i++){
+//			hopCount.add(dataObject.get(i).getHopCount());
+//		}
+//		return hopCount;
+//	}
 	
 //	public ArrayList<Integer> getHashCode(){
 //		ArrayList<Integer> result = new ArrayList<Integer>();

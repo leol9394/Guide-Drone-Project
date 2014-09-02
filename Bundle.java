@@ -1,6 +1,6 @@
 package sim.app.drones;
 
-public class DataObject {
+public class Bundle {
 	
 	public class HashCode {
 		private int hashCode;
@@ -31,9 +31,9 @@ public class DataObject {
 	private HashCode hashCode = new HashCode();
 //	private Object object;
 	
-	public DataObject(){}
+	public Bundle(){}
 	
-	public DataObject(DataObject another){
+	public Bundle(Bundle another){
 		this.source = another.source;
 		this.data = another.data;
 		this.generatedTime = another.generatedTime;

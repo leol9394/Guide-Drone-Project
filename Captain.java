@@ -2,7 +2,7 @@ package sim.app.drones;
 
 import java.util.ArrayList;
 
-import sim.app.drones.DataObject.HashCode;
+import sim.app.drones.Bundle.HashCode;
 import sim.engine.SimState;
 import sim.engine.Steppable;
 import sim.field.continuous.Continuous2D;
@@ -14,7 +14,7 @@ public class Captain implements Steppable{
 	
 	protected Double2D me;
 	protected double scale;
-	protected ArrayList<DataObject> dataObject = new ArrayList<DataObject>();
+	protected ArrayList<Bundle> dataObject = new ArrayList<Bundle>();
 	protected ArrayList<Integer> nearbyDrones;
 	protected ArrayList<HashCode> hashCode = new ArrayList<HashCode>();
 	
@@ -25,19 +25,62 @@ public class Captain implements Steppable{
 	protected boolean isAllDataReceivedYet = false;
 	protected boolean isResultReadyToWrite = false;
 	protected boolean isResultWritten = false;
+		
+	public void step(SimState state){	
+		scale = 15.0;
+		
+		move(state);
+	}
 	
-	public String toString() {
-		if(!dataObject.isEmpty()){
-			String result = "Captain Time: "+duration+" Data: ";
-			for(int i=0; i<dataObject.size(); i++){
-				result += " " + dataObject.get(i).getData();
-			}
-			return result;
+	public void move(SimState state){
+		Demo demo = (Demo) state;
+		
+		Continuous2D captains = demo.captains;
+		
+		me = captains.getObjectLocation(this);
+		
+		MutableDouble2D sumNavigation = new MutableDouble2D();
+		
+		sumNavigation.addIn(me);
+		
+		demo.captains.setObjectLocation(this, new Double2D(sumNavigation));
+		
+		timer(demo);
+		
+	}
+	
+	public void timer(Demo demo){
+		if(isAllDataReceivedYet){
+			duration = (endTime - startTime);
 		}
 		else{
-			String result = "Captain Time: "+duration;
-			return result;
+			if(dataObject.size()==(Demo.numDrones*Demo.numData)){
+				endTime = demo.schedule.getTime();
+				isAllDataReceivedYet = true;
+			}
+			else{
+				duration = (demo.schedule.getTime() - startTime);
+			}
 		}
+	}
+	
+	/* The following method is for inspecting drone status in Model. */
+//	public String toString() {
+//	if(!dataObject.isEmpty()){
+//		String result = "Captain Time: "+duration+" Data: ";
+//		for(int i=0; i<dataObject.size(); i++){
+//			result += " " + dataObject.get(i).getData();
+//		}
+//		return result;
+//	}
+//	else{
+//		String result = "Captain Time: "+duration;
+//		return result;
+//	}
+//}
+
+	public String toString(){
+		return "";
 	}
 	
 	public double getDuration(){
@@ -78,43 +121,5 @@ public class Captain implements Steppable{
 			time.add(dataObject.get(i).getTime());
 		}
 		return time;
-	}
-	
-	public void step(SimState state){	
-		scale = 10.0;
-		
-		move(state);
-	}
-	
-	public void move(SimState state){
-		Demo demo = (Demo) state;
-		
-		Continuous2D captains = demo.captains;
-		
-		me = captains.getObjectLocation(this);
-		
-		MutableDouble2D sumNavigation = new MutableDouble2D();
-		
-		sumNavigation.addIn(me);
-		
-		demo.captains.setObjectLocation(this, new Double2D(sumNavigation));
-		
-		timer(demo);
-		
-	}
-	
-	public void timer(Demo demo){
-		if(isAllDataReceivedYet){
-			duration = (endTime - startTime);
-		}
-		else{
-			if(dataObject.size()==(Demo.numDrones*Demo.numData)){
-				endTime = demo.schedule.getTime();
-				isAllDataReceivedYet = true;
-			}
-			else{
-				duration = (demo.schedule.getTime() - startTime);
-			}
-		}
 	}
 }
