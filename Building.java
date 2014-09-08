@@ -14,7 +14,7 @@ public class Building extends ShapePortrayal2D {
 	protected double[] buildingY = new double[Y.size()];
 	
 	public Building(double[] xpoints, double[] ypoints, boolean filled) {
-		super(xpoints, ypoints, Color.gray, 1.0, false);
+		super(xpoints, ypoints, Color.blue, 1.0, false);
 		this.buildingX = xpoints;
 		this.buildingY = ypoints;
 	}

@@ -65,23 +65,23 @@ public class Captain implements Steppable{
 	}
 	
 	/* The following method is for inspecting drone status in Model. */
-//	public String toString() {
-//	if(!dataObject.isEmpty()){
-//		String result = "Captain Time: "+duration+" Data: ";
-//		for(int i=0; i<dataObject.size(); i++){
-//			result += " " + dataObject.get(i).getData();
-//		}
-//		return result;
-//	}
-//	else{
-//		String result = "Captain Time: "+duration;
-//		return result;
-//	}
-//}
-
-	public String toString(){
-		return "";
+	public String toString() {
+	if(!dataObject.isEmpty()){
+		String result = "Captain Time: "+duration+" Data: ";
+		for(int i=0; i<dataObject.size(); i++){
+			result += " " + dataObject.get(i).getData();
+		}
+		return result;
 	}
+	else{
+		String result = "Captain Time: "+duration;
+		return result;
+	}
+}
+
+//	public String toString(){
+//		return "";
+//	}
 	
 	public double getDuration(){
 		return duration;

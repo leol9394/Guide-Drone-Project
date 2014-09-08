@@ -78,7 +78,7 @@ public class DemoWithUI extends GUIState{
 								new LabelledPortrayal2D(
 										new RectanglePortrayal2D(5.0),
 										10.0, null, Color.black, false),
-										0, 30.0, Color.blue, false)));
+										0, 30.0, Color.red, false)));
 		
 		waypointPortrayal.setField(demo.waypoints);
 		waypointPortrayal.setPortrayalForAll(

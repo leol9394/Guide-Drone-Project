@@ -39,7 +39,7 @@ public class Drone implements Steppable{
 	protected boolean isResultWritten = false;
 	
 	/* The velocity of the drones, x meters per time step. */
-	protected double velocity = 0.15; 
+	protected double velocity = 0.5; 
 	
 	/* The Time-to-Live protocol attributes (time step). */
 	protected int timeToLive = 100;
@@ -280,14 +280,14 @@ public class Drone implements Steppable{
 		return nearbyDrones;
 	}
 	
-//	public double getACKDuration(){
-//		if(ACKTimestamp == 0){
-//			return ACKTimestamp;
-//		}
-//		else{
-//			return (currentTime - ACKTimestamp);
-//		}
-//	}
+	public double getACKDuration(){
+		if(ACKTimestamp == 0){
+			return ACKTimestamp;
+		}
+		else{
+			return (currentTime - ACKTimestamp);
+		}
+	}
 	
 //	public ArrayList<Integer> getHopCount(){
 //		ArrayList<Integer> hopCount = new ArrayList<Integer>();
@@ -305,13 +305,13 @@ public class Drone implements Steppable{
 //		return result;
 //	}
 	
-//	public ArrayList<Long> getTime(){
-//		ArrayList<Long> time = new ArrayList<Long>();
-//		for(int i=0; i<dataObject.size(); i++){
-//			time.add(dataObject.get(i).getTime());
-//		}
-//		return time;
-//	}
+	public ArrayList<Long> getTime(){
+		ArrayList<Long> time = new ArrayList<Long>();
+		for(int i=0; i<dataObject.size(); i++){
+			time.add(dataObject.get(i).getTime());
+		}
+		return time;
+	}
 
 //	public ArrayList<Integer> getDataSource(){
 //		ArrayList<Integer> dataSource = new ArrayList<Integer>();

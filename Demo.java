@@ -50,7 +50,7 @@ public class Demo extends SimState{
 	protected static int numDrones = 10;
 	protected static int numData = 1;
 	protected static int numBuildings = buildingX.size();
-	private int initialCaptainPosition = 30;	
+	private int initialCaptainPosition = 16;	
 	
 	/* The status of the communication of between the drones and Captains. */
 	private static String[][] encounteringDrones;
@@ -62,7 +62,7 @@ public class Demo extends SimState{
 	private String[] stopAtFixedTimeStepOutput = new String[numDrones+numCaptains];
 	private boolean allDataOutput = false;
 	private boolean fixedTimeDataOutput = false;
-	//private int recordTimeStep = 800;
+	private int recordTimeStep = 800;
 	
 	/* The attribute of Time-To-Live Protocol. */
 	protected static boolean timeToLiveStartTimeStep = false;
@@ -109,7 +109,6 @@ public class Demo extends SimState{
 					}
 				}
 				else{
-					((Drone)(getDrones.objs[i])).nearbyDrones.clear();
 					encounteringDrones[i][j]="Not Connected";
 				}
 			}
@@ -159,47 +158,30 @@ public class Demo extends SimState{
 				if(!((Captain)(getCaptains.objs[i])).isResultWritten){
 					String durationOutput = String.valueOf(((Captain)(getCaptains.objs[i])).duration);
 					allDataReceivedOutput[i] = durationOutput;
-					// temporary
-					String numCaptainHoldObjects = String.valueOf(((Captain)(getCaptains.objs[i])).dataObject.size());
-					stopAtFixedTimeStepOutput[i] = numCaptainHoldObjects;
-					//
 					((Captain)(getCaptains.objs[i])).isResultWritten = true;
 					allDataReceivedOutputState[i] = ((Captain)(getCaptains.objs[i])).isResultWritten;
 				}
 			}
 			
 			/* When the simulator has run for a fixed time step, the amount of data that Captain has received will be recorded. */
-//			if(schedule.getTime()==recordTimeStep){
-//				String numCaptainHoldObjects = String.valueOf(((Captain)(getCaptains.objs[i])).dataObject.size());
-//				stopAtFixedTimeStepOutput[i] = numCaptainHoldObjects;
-//			}
-		}
-		
-		/* When the Captain has received all the data, it is time to ouput the result. */
-		// 
-		if(allDataReceivedOutputState[0]){
-			for(int i=1; i<allDataReceivedOutputState.length; i++){
-				allDataReceivedOutputState[i] = true;
+			if(schedule.getTime()==recordTimeStep){
+				String numCaptainHoldObjects = String.valueOf(((Captain)(getCaptains.objs[i])).dataObject.size());
+				stopAtFixedTimeStepOutput[i] = numCaptainHoldObjects;
 			}
 		}
-		//
 		
 		for(int j=0; j<getDrones.numObjs; j++){
 			/* When the drone has delivered its data and received the ACK, the time will be recorded*/
-//			if(droneItselfDataSent(((Drone)(getDrones.objs[j])))){
-//				if(!((Drone)(getDrones.objs[j])).isResultWritten){
-//					String durationOutput = String.valueOf(((Drone)(getDrones.objs[j])).duration);
-//					allDataReceivedOutput[j+numCaptains] = durationOutput;
-//					((Drone)(getDrones.objs[j])).isResultWritten = true;
-//					allDataReceivedOutputState[j+numCaptains] = ((Drone)(getDrones.objs[j])).isResultWritten;
-//				}
-//			}
+			if(droneItselfDataSent(((Drone)(getDrones.objs[j])))){
+				if(!((Drone)(getDrones.objs[j])).isResultWritten){
+					String durationOutput = String.valueOf(((Drone)(getDrones.objs[j])).duration);
+					allDataReceivedOutput[j+numCaptains] = durationOutput;
+					((Drone)(getDrones.objs[j])).isResultWritten = true;
+					allDataReceivedOutputState[j+numCaptains] = ((Drone)(getDrones.objs[j])).isResultWritten;
+				}
+			}
 			
-			/* When the Captain has received all the data, if each drone sent its data personally will be recorded. */
-			// 
-			if(allDataReceivedOutputState[0]){
-			//
-			//if(schedule.getTime()==recordTimeStep){
+			if(schedule.getTime()==recordTimeStep){
 				String isItselfDataSent;
 				if(droneItselfDataSent(((Drone)(getDrones.objs[j])))){
 					isItselfDataSent = "1";
@@ -214,41 +196,36 @@ public class Demo extends SimState{
 		if(!allDataOutput){
 			if(outputStateChecker(allDataReceivedOutputState)){
 				FileInputOutput.insertFile(allDataReceived, allDataReceivedOutput);
-				/* When the Captain has received all the data, it is time to ouput the result. */
-				// 
-				FileInputOutput.insertFile(stopAtFixedTimeStep, stopAtFixedTimeStepOutput);
-				fixedTimeDataOutput = true;
-				//
 				allDataOutput = true;
 			}
 		}
 		
 		/* When the simulator has run for a fixed time step, if each drone has delivered its data and received the ACK will be recorded. */
-//		if(schedule.getTime()==recordTimeStep){
-//			FileInputOutput.insertFile(stopAtFixedTimeStep, stopAtFixedTimeStepOutput);
-//			fixedTimeDataOutput = true;
-//		}
+		if(schedule.getTime()==recordTimeStep){
+			FileInputOutput.insertFile(stopAtFixedTimeStep, stopAtFixedTimeStepOutput);
+			fixedTimeDataOutput = true;
+		}
 		
 		if(!timeToLiveStartHopCount){
 			if(allDataOutput && fixedTimeDataOutput){
-				if(FileInputOutput.lineCount(allDataReceived)==pause){
-					System.exit(0);
-				}
-				else{
-					String[] args = {};
-					MouseMovement.main(args);
-				}
+//				if(FileInputOutput.lineCount(allDataReceived)==pause){
+//					System.exit(0);
+//				}
+//				else{
+//					String[] args = {};
+//					MouseMovement.main(args);
+//				}
 			}
 		}
 		else{
 			if(fixedTimeDataOutput){
-				if(FileInputOutput.lineCount(stopAtFixedTimeStep)==pause){
-					System.exit(0);
-				}
-				else{
-					String[] args = {};
-					MouseMovement.main(args);
-				}
+//				if(FileInputOutput.lineCount(stopAtFixedTimeStep)==pause){
+//					System.exit(0);
+//				}
+//				else{
+//					String[] args = {};
+//					MouseMovement.main(args);
+//				}
 			}
 		}
 
@@ -485,8 +462,6 @@ public class Demo extends SimState{
 		/* Set up the Captains. */
 		for(int i=0; i<numCaptains; i++){
 			Captain captain = new Captain();
-			
-			int initialCaptainPosition = 30;
 			
 			captains.setObjectLocation(captain, new Double2D(Math.abs(waypointCoordinate.get(initialCaptainPosition).get(0) - originX), Math.abs(waypointCoordinate.get(initialCaptainPosition).get(1) - originY)));
 			
